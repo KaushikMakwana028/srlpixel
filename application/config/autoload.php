@@ -58,7 +58,7 @@ $autoload['packages'] = array();
 |
 |	$autoload['libraries'] = array('user_agent' => 'ua');
 */
-$autoload['libraries'] = array();
+$autoload['libraries'] = array('database', 'session', 'form_validation');
 
 /*
 | -------------------------------------------------------------------
@@ -88,8 +88,9 @@ $autoload['drivers'] = array();
 | Prototype:
 |
 |	$autoload['helper'] = array('url', 'file');
+|
 */
-$autoload['helper'] = array();
+$autoload['helper'] = array('url', 'file', 'form', 'text');
 
 /*
 | -------------------------------------------------------------------
@@ -131,5 +132,6 @@ $autoload['language'] = array();
 | in the controller:
 |
 |	$autoload['model'] = array('first_model' => 'first');
+|
 */
-$autoload['model'] = array();
+$autoload['model'] = array('General_model');

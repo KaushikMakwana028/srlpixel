@@ -49,6 +49,75 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 | Examples:	my-controller/index	-> my_controller/index
 |		my-controller/my-method	-> my_controller/my_method
 */
-$route['default_controller'] = 'welcome';
+$route['default_controller'] = 'Home';
 $route['404_override'] = '';
 $route['translate_uri_dashes'] = FALSE;
+
+// Admin Portal Routes
+$route['admin'] = 'admin/Login';
+$route['admin/login'] = 'admin/Login/index';
+$route['admin/register'] = 'admin/Login/register';
+$route['admin/logout'] = 'admin/Login/logout';
+$route['admin/dashboard'] = 'admin/Dashboard/index';
+$route['admin/profile'] = 'admin/Profile/index';
+$route['admin/profile/change_password'] = 'admin/Profile/change_password';
+
+// Admin Categories CRUD
+$route['admin/categories'] = 'admin/Categories/index';
+$route['admin/categories/ajax_list'] = 'admin/Categories/ajax_list';
+$route['admin/categories/add'] = 'admin/Categories/add';
+$route['admin/categories/edit/(:num)'] = 'admin/Categories/edit/$1';
+$route['admin/categories/delete/(:num)'] = 'admin/Categories/delete/$1';
+$route['admin/categories/status/(:num)'] = 'admin/Categories/status/$1';
+
+// Admin Products CRUD
+$route['admin/products'] = 'admin/Products/index';
+$route['admin/products/ajax_list'] = 'admin/Products/ajax_list';
+$route['admin/products/add'] = 'admin/Products/add';
+$route['admin/products/edit/(:num)'] = 'admin/Products/edit/$1';
+$route['admin/products/delete/(:num)'] = 'admin/Products/delete/$1';
+$route['admin/products/status/(:num)'] = 'admin/Products/status/$1';
+$route['admin/products/delete_gallery_image/(:num)/(:num)'] = 'admin/Products/delete_gallery_image/$1/$2';
+
+// Admin Customer Listing
+$route['admin/customers'] = 'admin/Customers/index';
+$route['admin/customers/ajax_list'] = 'admin/Customers/ajax_list';
+$route['admin/customers/status/(:num)'] = 'admin/Customers/status/$1';
+$route['admin/customers/delete/(:num)'] = 'admin/Customers/delete/$1';
+
+// Admin Orders Management
+$route['admin/orders'] = 'admin/Orders/index';
+$route['admin/orders/ajax_list'] = 'admin/Orders/ajax_list';
+$route['admin/orders/detail/(:num)'] = 'admin/Orders/detail/$1';
+$route['admin/orders/update_status'] = 'admin/Orders/update_status';
+
+// Customer / User Portal Routes
+$route['home'] = 'Home/index';
+$route['categories'] = 'Category/index';
+$route['category/(:num)'] = 'Category/view/$1';
+$route['category/(:any)'] = 'Category/view/$1';
+$route['products'] = 'Product/index';
+$route['product/(:num)'] = 'Product/detail/$1';
+$route['product/(:any)'] = 'Product/detail/$1';
+
+// Customer Shopping Cart Routes
+$route['cart'] = 'Cart/index';
+$route['cart/add'] = 'Cart/add';
+$route['cart/update'] = 'Cart/update_quantity';
+$route['cart/remove/(:num)'] = 'Cart/remove/$1';
+$route['cart/clear'] = 'Cart/clear';
+$route['cart/checkout'] = 'Cart/checkout';
+
+$route['login'] = 'Login/index';
+$route['register'] = 'Login/register';
+$route['logout'] = 'Login/logout';
+
+// Customer Dashboard, Addresses & Orders
+$route['dashboard'] = 'Dashboard/index';
+$route['dashboard/add_address'] = 'Dashboard/add_address';
+$route['dashboard/edit_address/(:num)'] = 'Dashboard/edit_address/$1';
+$route['dashboard/delete_address/(:num)'] = 'Dashboard/delete_address/$1';
+$route['dashboard/set_default_address/(:num)'] = 'Dashboard/set_default_address/$1';
+$route['dashboard/order/(:num)'] = 'Dashboard/order/$1';
+$route['dashboard/change_password'] = 'Dashboard/change_password';
+
