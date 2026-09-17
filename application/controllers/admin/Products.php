@@ -36,10 +36,20 @@ class Products extends CI_Controller {
         $limit = 10;
         $page = 1;
         $offset = 0;
-        $total = $this->General_model->count_filtered_data('products');
+
+        $stock_status = $this->input->get('stock_status');
+        $where = [];
+        if ($stock_status === 'in_stock') {
+            $where['stock >'] = 0;
+        } elseif ($stock_status === 'out_of_stock') {
+            $where['stock <='] = 0;
+        }
+
+        $total = $this->General_model->count_filtered_data('products', $where);
         $total_pages = max(1, ceil($total / $limit));
 
-        $products = $this->General_model->get_paginated_data('products', [], [], $limit, $offset, 'id DESC');
+        $products = $this->General_model->get_paginated_data('products', $where, [], $limit, $offset, 'id DESC');
+        $data['stock_status'] = $stock_status;
 
         // Fetch gallery counts for visible products only
         $gallery_counts = [];
@@ -90,7 +100,7 @@ class Products extends CI_Controller {
         if ($stock_status === 'in_stock') {
             $where['stock >'] = 0;
         } elseif ($stock_status === 'out_of_stock') {
-            $where['stock ='] = 0;
+            $where['stock <='] = 0;
         }
 
         $like = [];

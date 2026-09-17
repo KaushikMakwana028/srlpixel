@@ -41,7 +41,7 @@
         <div class="position-relative d-inline-block mb-3">
           <div id="profileAvatarContainer" class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold shadow" style="width: 95px; height: 95px; border: 3px solid var(--srl-pink-glow); background: #231b2e; font-size: 2.2rem; overflow: hidden; margin: 0 auto; position: relative;">
             <?php if (!empty($admin->profile_image) && file_exists('./uploads/profiles/' . $admin->profile_image)): ?>
-              <img id="avatarPreviewImg" src="<?= base_url('uploads/profiles/' . $admin->profile_image) ?>" alt="<?= html_escape($admin->name) ?>" class="w-100 h-100 object-fit-cover">
+              <img id="avatarPreviewImg" src="<?= base_url('uploads/profiles/' . $admin->profile_image) ?>" alt="<?= html_escape($admin->name) ?>" class="w-100 h-100 object-fit-cover rounded-circle">
             <?php else: ?>
               <span id="avatarInitialText"><?= strtoupper(substr($admin->name, 0, 1)) ?></span>
             <?php endif; ?>
@@ -279,12 +279,13 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!previewImg) {
           previewImg = document.createElement('img');
           previewImg.id = 'avatarPreviewImg';
-          previewImg.className = 'w-100 h-100 object-fit-cover';
+          previewImg.className = 'w-100 h-100 object-fit-cover rounded-circle';
           previewImg.alt = 'Avatar Preview';
           avatarContainer.appendChild(previewImg);
         }
         previewImg.src = e.target.result;
         previewImg.style.display = 'block';
+        previewImg.style.borderRadius = '50%';
 
         // Brief glowing pulse effect to confirm preview
         avatarContainer.style.boxShadow = '0 0 25px rgba(235, 14, 153, 0.8)';

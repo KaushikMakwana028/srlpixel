@@ -30,19 +30,27 @@ class Product extends CI_Controller {
             $like['description'] = $search;
         }
 
-        $products = $this->General_model->get_paginated_data('products', $where, $like, 50, 0, 'id DESC');
+        $products = $this->General_model->get_paginated_data('products', $where, $like, 200, 0, 'id DESC');
         $categories = $this->General_model->getAll('categories', ['status' => 1]);
 
         $cat_map = [];
+        $category_counts = [];
+        $total_products_count = $this->General_model->count_filtered_data('products', ['status' => 1]);
         if (!empty($categories)) {
             foreach ($categories as $cat) { 
                 $cat_map[$cat->id] = $cat->name;
+                $category_counts[$cat->id] = $this->General_model->count_filtered_data('products', [
+                    'category_id' => $cat->id,
+                    'status'      => 1
+                ]);
             }
         }
 
         $data['products'] = $products;
         $data['categories'] = $categories;
         $data['category_map'] = $cat_map;
+        $data['category_counts'] = $category_counts;
+        $data['total_products_count'] = $total_products_count;
         $data['current_category'] = $category_id;
         $data['search_term'] = $search;
 

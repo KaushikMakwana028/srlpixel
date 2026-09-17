@@ -39,8 +39,8 @@
     <div class="col-6 col-md-3 col-lg-2">
       <select id="productStockFilter" class="form-select form-select-sm srl-filter-select">
         <option value="">All Stock</option>
-        <option value="in_stock">In Stock (>0)</option>
-        <option value="out_of_stock">Out of Stock</option>
+        <option value="in_stock" <?= (isset($stock_status) && $stock_status === 'in_stock') ? 'selected' : '' ?>>In Stock (>0)</option>
+        <option value="out_of_stock" <?= (isset($stock_status) && $stock_status === 'out_of_stock') ? 'selected' : '' ?>>Out of Stock</option>
       </select>
     </div>
     <div class="col-6 col-md-2 col-lg-2">

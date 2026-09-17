@@ -1,3 +1,119 @@
+<style>
+/* ============================================================
+   ADMIN ORDERS VIEW STYLES
+   ============================================================ */
+
+.order-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 8px;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+.status-awaiting-payment {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.status-placed {
+  background: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
+}
+
+.status-confirmed {
+  background: #ede9fe;
+  color: #6d28d9;
+  border: 1px solid #ddd6fe;
+}
+
+.status-packed {
+  background: #ffedd5;
+  color: #c2410c;
+  border: 1px solid #fed7aa;
+}
+
+.status-out-for-delivery {
+  background: #fef9c3;
+  color: #854d0e;
+  border: 1px solid #fef08a;
+}
+
+.status-delivered {
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+
+.status-cancelled {
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+.order-filter-pill-nav {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  margin-bottom: 20px;
+  scrollbar-width: none;
+}
+
+.order-filter-pill-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.order-filter-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 50px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  color: #475569;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.order-filter-pill:hover {
+  background: #f8fafc;
+  color: var(--srl-pink);
+  border-color: rgba(225, 29, 116, 0.4);
+}
+
+.order-filter-pill.active {
+  background: var(--srl-pink-gradient) !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+  box-shadow: 0 4px 12px rgba(225, 29, 116, 0.35);
+}
+
+.order-filter-pill .pill-count {
+  background: rgba(0, 0, 0, 0.07);
+  padding: 1px 7px;
+  border-radius: 12px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.order-filter-pill.active .pill-count {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}
+</style>
+
 <div class="container-fluid px-3 px-md-4 py-4">
   <!-- Page Header -->
   <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">

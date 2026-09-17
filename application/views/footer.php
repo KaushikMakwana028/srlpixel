@@ -8,7 +8,7 @@
       <div class="row g-4 mb-4">
         <!-- Col 1: Brand Info & Social -->
         <div class="col-lg-5 col-md-12">
-          <img src="<?= base_url('assets/images/new_logo.png') ?>" alt="SRL Pixel Logo" style="max-height: 48px; width: auto; object-fit: contain; margin-bottom: 16px;" onerror="this.onerror=null; this.src='<?= base_url('assets/images/logo.png') ?>';">
+          <img src="<?= base_url('assets/images/new_logo2.png') ?>" alt="SRL Pixel Logo" style="max-height: 54px; width: auto; object-fit: contain; margin-bottom: 16px; mix-blend-mode: screen;" onerror="this.onerror=null; this.src='<?= base_url('assets/images/new_logo.png') ?>';">
           <p class="footer-desc mb-3">
             SRL PIXEL LED'S GLOWING HUB - India's premier destination for high-grade addressable RGB pixel LED strips, smart programmable controllers, neon flex ropes, and architectural power converters.
           </p>
@@ -28,7 +28,7 @@
             <li><a href="<?= base_url('categories') ?>" class="footer-link"><i class="bi bi-chevron-right" style="font-size: 0.7rem; color: var(--srl-pink);"></i>Categories</a></li>
             <li><a href="<?= base_url('products') ?>" class="footer-link"><i class="bi bi-chevron-right" style="font-size: 0.7rem; color: var(--srl-pink);"></i>All Products</a></li>
             <li><a href="<?= base_url('cart') ?>" class="footer-link"><i class="bi bi-chevron-right" style="font-size: 0.7rem; color: var(--srl-pink);"></i>Shopping Cart</a></li>
-            <li><a href="<?= base_url('dashboard') ?>" class="footer-link"><i class="bi bi-chevron-right" style="font-size: 0.7rem; color: var(--srl-pink);"></i>My Account</a></li>
+            <li><a href="<?= base_url('profile') ?>" class="footer-link"><i class="bi bi-chevron-right" style="font-size: 0.7rem; color: var(--srl-pink);"></i>My Profile</a></li>
           </ul>
         </div>
 
@@ -75,22 +75,29 @@
 
   <!-- Mobile Fixed Bottom Navigation Bar (Visible on mobile screens <= 768px) -->
   <nav class="srl-mobile-bottom-nav d-md-none">
-    <a href="<?= base_url() ?>" class="srl-bottom-nav-item <?= (uri_string() == '' || uri_string() == 'home') ? 'active' : '' ?>">
+    <a href="<?= base_url() ?>" class="srl-bottom-nav-item srl-mobile-nav-item <?= (uri_string() == '' || uri_string() == 'home') ? 'active' : '' ?>">
       <i class="bi <?= (uri_string() == '' || uri_string() == 'home') ? 'bi-house-door-fill' : 'bi-house-door' ?>"></i>
       <span>Home</span>
     </a>
-    <a href="<?= base_url('categories') ?>" class="srl-bottom-nav-item <?= (strpos(uri_string(), 'categor') !== false) ? 'active' : '' ?>">
+    <a href="<?= base_url('categories') ?>" class="srl-bottom-nav-item srl-mobile-nav-item <?= (strpos(uri_string(), 'categor') !== false) ? 'active' : '' ?>">
       <i class="bi <?= (strpos(uri_string(), 'categor') !== false) ? 'bi-grid-fill' : 'bi-grid' ?>"></i>
       <span>Category</span>
     </a>
-    <a href="<?= base_url('products') ?>" class="srl-bottom-nav-item <?= (strpos(uri_string(), 'product') !== false) ? 'active' : '' ?>">
+    <a href="<?= base_url('products') ?>" class="srl-bottom-nav-item srl-mobile-nav-item <?= (strpos(uri_string(), 'product') !== false) ? 'active' : '' ?>">
       <i class="bi <?= (strpos(uri_string(), 'product') !== false) ? 'bi-box-seam-fill' : 'bi-box-seam' ?>"></i>
       <span>Product</span>
     </a>
-    <a href="<?= $this->session->userdata('user_logged_in') ? base_url('dashboard') : base_url('login') ?>" class="srl-bottom-nav-item <?= (uri_string() == 'dashboard' || uri_string() == 'login' || uri_string() == 'register') ? 'active' : '' ?>">
-      <i class="bi <?= (uri_string() == 'dashboard' || uri_string() == 'login' || uri_string() == 'register') ? 'bi-person-fill' : 'bi-person' ?>"></i>
-      <span>Profile</span>
-    </a>
+    <?php if ($this->session->userdata('user_logged_in') && $this->session->userdata('user_role') == 0): ?>
+      <a href="<?= base_url('profile') ?>" class="srl-bottom-nav-item srl-mobile-nav-item <?= (strpos(uri_string(), 'profile') !== false || strpos(uri_string(), 'dashboard') !== false) ? 'active' : '' ?>">
+        <i class="bi <?= (strpos(uri_string(), 'profile') !== false || strpos(uri_string(), 'dashboard') !== false) ? 'bi-person-fill' : 'bi-person' ?>"></i>
+        <span>Profile</span>
+      </a>
+    <?php else: ?>
+      <a href="<?= base_url('login') ?>" class="srl-bottom-nav-item srl-mobile-nav-item <?= (uri_string() == 'login' || uri_string() == 'register') ? 'active' : '' ?>">
+        <i class="bi bi-box-arrow-in-right"></i>
+        <span>Login</span>
+      </a>
+    <?php endif; ?>
   </nav>
 
   <!-- High-Resolution Lightbox Modal for Large Image Previews -->
@@ -257,16 +264,19 @@ document.addEventListener('DOMContentLoaded', function () {
               }
             });
           } else if (data.success) {
+            const num = parseInt(data.cart_count) || 0;
             document.querySelectorAll('.cart-badge-count').forEach(badge => {
-              badge.innerText = data.cart_count;
+              badge.innerText = num;
+              badge.style.setProperty('display', (num > 0) ? 'flex' : 'none', 'important');
             });
+            const shortName = prodName && prodName.length > 26 ? prodName.substring(0, 24) + '...' : (prodName || 'Item');
             Swal.fire({
               toast: true,
               position: 'top-end',
               icon: 'success',
-              title: data.message || `"${prodName}" added to cart!`,
+              title: data.message || `Added "${shortName}" to cart!`,
               showConfirmButton: false,
-              timer: 2500,
+              timer: 2200,
               customClass: {
                 popup: 'srl-swal-toast'
               }

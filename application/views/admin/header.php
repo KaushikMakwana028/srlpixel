@@ -58,10 +58,22 @@
             <span>Products</span>
           </a>
         </li>
-        <li class="menu-item <?= (strpos($current_uri, 'admin/orders') === 0) ? 'active' : '' ?>">
+        <li class="menu-item <?= (strpos($current_uri, 'admin/home_banners') === 0 || strpos($current_uri, 'admin/banners') === 0) ? 'active' : '' ?>">
+          <a href="<?= base_url('admin/home_banners') ?>" class="menu-link">
+            <i class="bi bi-images"></i>
+            <span>Home Banners</span>
+          </a>
+        </li>
+        <li class="menu-item <?= (strpos($current_uri, 'admin/orders') === 0 && strpos($current_uri, 'admin/offline_orders') === false) ? 'active' : '' ?>">
           <a href="<?= base_url('admin/orders') ?>" class="menu-link">
             <i class="bi bi-receipt"></i>
             <span>Orders</span>
+          </a>
+        </li>
+        <li class="menu-item <?= (strpos($current_uri, 'admin/offline_orders') === 0) ? 'active' : '' ?>">
+          <a href="<?= base_url('admin/offline_orders') ?>" class="menu-link">
+            <i class="bi bi-shop"></i>
+            <span>Offline Orders</span>
           </a>
         </li>
         <li class="menu-item <?= (strpos($current_uri, 'admin/customers') === 0) ? 'active' : '' ?>">
@@ -122,7 +134,7 @@
             <div class="profile-dropdown-header">
               <div class="dropdown-avatar-circle">
                 <?php if (!empty($admin_img) && file_exists('./uploads/profiles/' . $admin_img)): ?>
-                  <img src="<?= base_url('uploads/profiles/' . $admin_img) ?>" alt="<?= html_escape($admin_name) ?>">
+                  <img src="<?= base_url('uploads/profiles/' . $admin_img) ?>" alt="<?= html_escape($admin_name) ?>" class="w-100 h-100 rounded-circle object-fit-cover">
                 <?php else: ?>
                   <?= $first_letter ?>
                 <?php endif; ?>

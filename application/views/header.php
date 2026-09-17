@@ -17,7 +17,7 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
 
   <!-- SRL Pixel Theme CSS -->
-  <link rel="stylesheet" href="<?= base_url('assets/css/srlpixel-theme.css') ?>">
+  <link rel="stylesheet" href="<?= base_url('assets/css/srlpixel-theme.css?v=' . (file_exists(FCPATH . 'assets/css/srlpixel-theme.css') ? filemtime(FCPATH . 'assets/css/srlpixel-theme.css') : time())) ?>">
 </head>
 <body class="d-flex flex-column min-vh-100 <?= !isset($auth_layout) ? 'srl-has-bottom-nav' : '' ?>" data-user-logged-in="<?= $this->session->userdata('user_logged_in') ? '1' : '0' ?>" data-base-url="<?= base_url() ?>">
 
@@ -53,7 +53,7 @@
     <div class="container d-flex align-items-center justify-content-between">
       <!-- Left: Brand Logo -->
       <a class="navbar-brand d-flex align-items-center gap-2 m-0 p-0" href="<?= base_url() ?>">
-        <img src="<?= base_url('assets/images/new_logo.png') ?>" alt="SRL Pixel Logo" class="customer-brand-logo" onerror="this.onerror=null; this.src='<?= base_url('assets/images/logo.png') ?>';">
+        <img src="<?= base_url('assets/images/new_logo2.png') ?>" alt="SRL Pixel Logo" class="customer-brand-logo" onerror="this.onerror=null; this.src='<?= base_url('assets/images/new_logo.png') ?>';">
       </a>
 
       <!-- Center: Desktop Navigation Links (Hidden on mobile) -->
@@ -78,69 +78,64 @@
       <!-- Right: Action Buttons (Cart & Profile - visible on BOTH Mobile & Desktop) -->
       <div class="d-flex align-items-center gap-2">
         <!-- Shopping Cart Circular Icon Button with Live Count Badge -->
-        <a href="<?= base_url('cart') ?>" class="nav-icon-circle-btn" title="View Shopping Cart" id="headerCartBtn">
-          <i class="bi bi-cart3 fs-5"></i>
-          <span class="cart-badge-dot cart-badge-count" id="headerCartBadge"><?= $header_cart_count ?></span>
+        <a href="<?= base_url('cart') ?>" class="nav-icon-circle-btn position-relative" title="View Shopping Cart" id="headerCartBtn">
+          <i class="bi bi-cart3"></i>
+          <span class="nav-cart-badge cart-badge-count cart-badge-dot" id="headerCartBadge" style="<?= ($header_cart_count > 0) ? 'display:flex !important;' : 'display:none !important;' ?>"><?= $header_cart_count ?></span>
         </a>
 
-        <!-- Profile Avatar / Dropdown Button -->
+        <!-- Profile Avatar / Dropdown Button (COMMENTED OUT AS REQUESTED - DO NOT REMOVE) -->
+        <?php /*
         <div class="dropdown">
           <?php if ($is_logged_in): ?>
-            <!-- Logged In User Avatar with Initial & Caret -->
+            <!-- Logged In User Avatar with Initial, First Name & Chevron -->
             <button class="nav-avatar-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" id="profileDropdownBtn">
               <span class="nav-avatar-circle overflow-hidden p-0 d-inline-flex align-items-center justify-content-center">
                 <?php if (!empty($user_profile_img) && file_exists('./uploads/profiles/' . $user_profile_img)): ?>
-                  <img src="<?= base_url('uploads/profiles/' . $user_profile_img) ?>" alt="<?= html_escape($user_name) ?>" class="w-100 h-100 object-fit-cover">
+                  <img src="<?= base_url('uploads/profiles/' . $user_profile_img) ?>" alt="<?= html_escape($user_name) ?>" class="w-100 h-100 object-fit-cover rounded-circle">
                 <?php else: ?>
                   <?= html_escape($user_initial) ?>
                 <?php endif; ?>
               </span>
-              <i class="bi bi-caret-down-fill nav-avatar-arrow d-none d-sm-inline"></i>
+              <span class="nav-user-firstname d-none d-sm-inline"><?= html_escape(explode(' ', trim($user_name))[0]) ?></span>
+              <i class="bi bi-chevron-down nav-dropdown-chevron"></i>
             </button>
-            <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2 p-2 rounded-4" aria-labelledby="profileDropdownBtn" style="background: #181c28; border: 1px solid rgba(255, 42, 133, 0.25) !important; min-width: 220px;">
-              <li class="px-3 py-2 border-bottom border-secondary mb-1" style="border-color: rgba(255,255,255,0.08) !important;">
+            <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2 p-2 rounded-4" aria-labelledby="profileDropdownBtn" id="profileDropdownMenu">
+              <li class="px-3 py-2 border-bottom mb-1" style="border-color: rgba(255,255,255,0.08) !important;">
                 <div class="fw-bold text-white small"><?= html_escape($user_name) ?></div>
-                <div class="text-muted small text-truncate" style="font-size: 0.76rem;"><?= html_escape($user_email) ?></div>
+                <div class="small text-truncate" style="font-size: 0.76rem; color: #94a3b8 !important;"><?= html_escape($user_email) ?></div>
               </li>
               <li>
-                <a class="dropdown-item text-white rounded-3 py-2 d-flex align-items-center gap-2" href="<?= base_url('dashboard') ?>">
-                  <i class="bi bi-person-circle" style="color: var(--srl-pink-glow);"></i>My Profile
+                <a class="dropdown-item srl-dropdown-item py-2 d-flex align-items-center gap-2" href="<?= base_url('profile') ?>">
+                  <i class="bi bi-person-circle text-pink"></i><span>My Profile</span>
                 </a>
               </li>
               <li>
-                <a class="dropdown-item text-white rounded-3 py-2 d-flex align-items-center gap-2" href="<?= base_url('cart') ?>">
-                  <i class="bi bi-cart3" style="color: var(--srl-pink-glow);"></i>My Cart
-                </a>
-              </li>
-              <li><hr class="dropdown-divider my-1" style="border-color: rgba(255,255,255,0.08);"></li>
-              <li>
-                <a class="dropdown-item text-danger rounded-3 py-2 d-flex align-items-center gap-2" href="<?= base_url('logout') ?>">
-                  <i class="bi bi-box-arrow-right"></i>Sign Out
-                </a>
-              </li>
-            </ul>
-          <?php else: ?>
-            <!-- Guest User Circle with Caret -->
-            <button class="nav-avatar-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" id="guestDropdownBtn">
-              <span class="nav-avatar-circle guest">
-                <i class="bi bi-person fs-5"></i>
-              </span>
-              <i class="bi bi-caret-down-fill nav-avatar-arrow d-none d-sm-inline"></i>
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2 p-2 rounded-4" aria-labelledby="guestDropdownBtn" style="background: #181c28; border: 1px solid rgba(255, 42, 133, 0.25) !important; min-width: 190px;">
-              <li>
-                <a class="dropdown-item text-white rounded-3 py-2 d-flex align-items-center gap-2" href="<?= base_url('login') ?>">
-                  <i class="bi bi-box-arrow-in-right" style="color: var(--srl-pink-glow);"></i>Sign In
+                <a class="dropdown-item srl-dropdown-item py-2 d-flex align-items-center gap-2" href="<?= base_url('profile?tab=orders') ?>">
+                  <i class="bi bi-box-seam text-pink"></i><span>My Orders</span>
                 </a>
               </li>
               <li>
-                <a class="dropdown-item text-white rounded-3 py-2 d-flex align-items-center gap-2" href="<?= base_url('register') ?>">
-                  <i class="bi bi-person-plus" style="color: var(--srl-pink-glow);"></i>Register
+                <a class="dropdown-item srl-dropdown-item py-2 d-flex align-items-center gap-2" href="<?= base_url('profile?tab=addresses') ?>">
+                  <i class="bi bi-geo-alt text-pink"></i><span>Saved Addresses</span>
+                </a>
+              </li>
+              <li><hr class="dropdown-divider my-1" style="border-color: rgba(255,255,255,0.08) !important;"></li>
+              <li>
+                <a class="dropdown-item srl-dropdown-item srl-dropdown-signout py-2 d-flex align-items-center gap-2" href="<?= base_url('logout') ?>">
+                  <i class="bi bi-box-arrow-right"></i><span>Sign Out</span>
                 </a>
               </li>
             </ul>
           <?php endif; ?>
         </div>
+        */ ?>
+        <?php if (!$is_logged_in): ?>
+          <!-- Direct Login Button for Guest User -->
+          <a href="<?= base_url('login') ?>" class="btn-srl-primary rounded-pill px-3 py-1 fw-bold d-inline-flex align-items-center gap-1 text-decoration-none" style="font-size: 0.85rem;" title="Sign In">
+            <i class="bi bi-box-arrow-in-right"></i>
+            <span>Login</span>
+          </a>
+        <?php endif; ?>
       </div>
     </div>
   </nav>

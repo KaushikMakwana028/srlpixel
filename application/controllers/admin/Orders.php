@@ -23,16 +23,16 @@ class Orders extends CI_Controller {
         $data['title'] = 'Orders Management - SRL Pixel Admin';
         $data['breadcrumb'] = 'Orders';
 
-        // Count for status filter pills matching media_1789561608012.png
+        // Count for status filter pills matching online storefront orders only
         $data['counts'] = [
-            'all'                 => $this->General_model->count_filtered_data('orders'),
-            'Awaiting Payment'    => $this->General_model->count_filtered_data('orders', ['order_status' => 'Awaiting Payment']),
-            'Placed'              => $this->General_model->count_filtered_data('orders', ['order_status' => 'Placed']),
-            'Confirmed'           => $this->General_model->count_filtered_data('orders', ['order_status' => 'Confirmed']),
-            'Packed'              => $this->General_model->count_filtered_data('orders', ['order_status' => 'Packed']),
-            'Out for Delivery'    => $this->General_model->count_filtered_data('orders', ['order_status' => 'Out for Delivery']),
-            'Delivered'           => $this->General_model->count_filtered_data('orders', ['order_status' => 'Delivered']),
-            'Cancelled'           => $this->General_model->count_filtered_data('orders', ['order_status' => 'Cancelled'])
+            'all'                 => $this->General_model->count_filtered_data('orders', ['order_type' => 'online']),
+            'Awaiting Payment'    => $this->General_model->count_filtered_data('orders', ['order_type' => 'online', 'order_status' => 'Awaiting Payment']),
+            'Placed'              => $this->General_model->count_filtered_data('orders', ['order_type' => 'online', 'order_status' => 'Placed']),
+            'Confirmed'           => $this->General_model->count_filtered_data('orders', ['order_type' => 'online', 'order_status' => 'Confirmed']),
+            'Packed'              => $this->General_model->count_filtered_data('orders', ['order_type' => 'online', 'order_status' => 'Packed']),
+            'Out for Delivery'    => $this->General_model->count_filtered_data('orders', ['order_type' => 'online', 'order_status' => 'Out for Delivery']),
+            'Delivered'           => $this->General_model->count_filtered_data('orders', ['order_type' => 'online', 'order_status' => 'Delivered']),
+            'Cancelled'           => $this->General_model->count_filtered_data('orders', ['order_type' => 'online', 'order_status' => 'Cancelled'])
         ];
 
         $limit = 10;
@@ -40,7 +40,7 @@ class Orders extends CI_Controller {
         $offset = 0;
         $status = $this->input->get('status');
 
-        $where = [];
+        $where = ['order_type' => 'online'];
         if (!empty($status) && in_array($status, ['Awaiting Payment', 'Placed', 'Confirmed', 'Packed', 'Out for Delivery', 'Delivered', 'Cancelled'])) {
             $where['order_status'] = $status;
         }
@@ -72,7 +72,7 @@ class Orders extends CI_Controller {
         $search = trim($this->input->get_post('search') ?? '');
         $status = trim($this->input->get_post('status') ?? '');
 
-        $where = [];
+        $where = ['order_type' => 'online'];
         if (!empty($status) && in_array($status, ['Awaiting Payment', 'Placed', 'Confirmed', 'Packed', 'Out for Delivery', 'Delivered', 'Cancelled'])) {
             $where['order_status'] = $status;
         }
@@ -203,4 +203,29 @@ class Orders extends CI_Controller {
         $this->session->set_flashdata('success', 'Order status updated to "' . $status . '" successfully!');
         redirect('admin/orders/detail/' . $order->id);
     }
+
+    /**
+     * Print / Download Tax Invoice (Admin)
+     */
+    public function invoice($id = NULL)
+    {
+        $order = $this->General_model->getOne('orders', ['id' => (int)$id]);
+        if (!$order) {
+            $this->session->set_flashdata('error', 'Order not found.');
+            redirect('admin/orders');
+            return;
+        }
+
+        $items = $this->General_model->getAll('order_items', ['order_id' => $order->id]);
+        $customer = $this->General_model->getOne('user', ['id' => $order->user_id]);
+
+        $data['order']    = $order;
+        $data['items']    = $items;
+        $data['customer'] = $customer;
+        $data['is_admin'] = true;
+        $data['title']    = 'Tax Invoice #' . $order->order_number . ' - SRL Pixel Admin';
+
+        $this->load->view('invoice_view', $data);
+    }
 }
+

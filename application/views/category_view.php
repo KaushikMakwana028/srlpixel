@@ -75,15 +75,6 @@
                 <?= html_escape($category->name) ?>
               </div>
 
-              <!-- Rating -->
-              <div class="srl-product-rating">
-                <i class="bi bi-star-fill active-star"></i>
-                <i class="bi bi-star-fill active-star"></i>
-                <i class="bi bi-star-fill active-star"></i>
-                <i class="bi bi-star-fill active-star"></i>
-                <i class="bi bi-star-half active-star"></i>
-              </div>
-
               <!-- In stock check -->
               <div class="srl-stock-check <?= ($p->stock <= 0) ? 'out-of-stock' : '' ?>">
                 <?php if ($p->stock > 0): ?>

@@ -36,9 +36,104 @@ class Dashboard extends CI_Controller {
         }
 
         $data['admin'] = $admin;
-        $data['member_count'] = $this->General_model->getCount('user', ['role' => 0]);
-        $data['product_count'] = $this->General_model->getCount('products');
-        $data['category_count'] = $this->General_model->getCount('categories');
+        $data['admin_name'] = !empty($admin->name) ? $admin->name : ($this->session->userdata('admin_name') ? $this->session->userdata('admin_name') : 'Admin');
+
+        // 1. Financial & Revenue Metrics
+        $rev_row = $this->db->select('COALESCE(SUM(total_amount), 0) as total_rev')
+                            ->where('order_type', 'online')
+                            ->where('order_status !=', 'Cancelled')
+                            ->get('orders')
+                            ->row();
+        $data['gross_online_revenue'] = (float)($rev_row->total_rev ?? 0);
+
+        $paid_row = $this->db->select('COALESCE(SUM(total_amount), 0) as paid_rev')
+                             ->where('order_type', 'online')
+                             ->where('payment_status', 'Paid')
+                             ->get('orders')
+                             ->row();
+        $data['paid_online_revenue'] = (float)($paid_row->paid_rev ?? 0);
+
+        $today_row = $this->db->select('COALESCE(SUM(total_amount), 0) as today_rev, COUNT(*) as today_count')
+                              ->where('order_type', 'online')
+                              ->where('DATE(created_at)', date('Y-m-d'))
+                              ->get('orders')
+                              ->row();
+        $data['today_online_revenue'] = (float)($today_row->today_rev ?? 0);
+        $data['today_online_orders']  = (int)($today_row->today_count ?? 0);
+
+        $off_row = $this->db->select('COALESCE(SUM(total_amount), 0) as off_rev, COUNT(*) as off_count')
+                            ->where('order_type', 'offline')
+                            ->where('order_status !=', 'Cancelled')
+                            ->get('orders')
+                            ->row();
+        $data['offline_revenue']      = (float)($off_row->off_rev ?? 0);
+        $data['offline_orders_count'] = (int)($off_row->off_count ?? 0);
+
+        // 2. Orders Metrics
+        $data['total_orders_count']     = $this->General_model->count_filtered_data('orders', ['order_type' => 'online']);
+        $data['delivered_orders_count'] = $this->General_model->count_filtered_data('orders', ['order_type' => 'online', 'order_status' => 'Delivered']);
+        $data['pending_orders_count']   = $this->db->where('order_type', 'online')
+                                                   ->where_in('order_status', ['Awaiting Payment', 'Placed', 'Confirmed', 'Packed', 'Out for Delivery'])
+                                                   ->count_all_results('orders');
+
+        // 3. Customer Directory Metrics
+        $data['member_count']           = $this->General_model->count_filtered_data('user', ['role' => 0]);
+        $data['active_customers_count'] = $this->General_model->count_filtered_data('user', ['role' => 0, 'status' => 1]);
+        $data['new_customers_month']    = $this->db->where('role', 0)
+                                                   ->where('MONTH(created_at)', date('n'))
+                                                   ->where('YEAR(created_at)', date('Y'))
+                                                   ->count_all_results('user');
+
+        // 4. Products & Inventory Metrics
+        $data['product_count']          = $this->General_model->count_filtered_data('products');
+        $data['active_products_count']  = $this->General_model->count_filtered_data('products', ['status' => 1]);
+        $data['category_count']         = $this->General_model->count_filtered_data('categories');
+        $data['out_of_stock_count']     = $this->General_model->count_filtered_data('products', ['stock <=' => 0]);
+        $data['low_stock_count']        = $this->db->where('stock >', 0)->where('stock <=', 5)->count_all_results('products');
+
+        // 5. Recent 5 Online Orders
+        $data['recent_orders'] = $this->db->select('id, order_number, shipping_full_name, shipping_mobile, shipping_city, total_amount, payment_method, payment_status, order_status, created_at')
+                                          ->where('order_type', 'online')
+                                          ->order_by('id', 'DESC')
+                                          ->limit(5)
+                                          ->get('orders')
+                                          ->result();
+
+        // 6. Recent 5 Registered Customers
+        $data['recent_customers'] = $this->db->select('id, name, email, phone, status, profile_image, created_at')
+                                            ->where('role', 0)
+                                            ->order_by('id', 'DESC')
+                                            ->limit(5)
+                                            ->get('user')
+                                            ->result();
+
+        // 7. Top 5 Out of Stock Products
+        $data['out_of_stock_products'] = $this->db->select('p.id, p.name, p.slug, p.sku, p.price, p.discount_price, p.stock, p.image, p.status, c.name as category_name')
+                                                 ->from('products p')
+                                                 ->join('categories c', 'c.id = p.category_id', 'left')
+                                                 ->where('p.stock <=', 0)
+                                                 ->order_by('p.id', 'DESC')
+                                                 ->limit(5)
+                                                 ->get()
+                                                 ->result();
+
+        // Lowest stock products for inventory insights if none currently out of stock
+        $data['lowest_stock_products'] = $this->db->select('p.id, p.name, p.slug, p.sku, p.price, p.discount_price, p.stock, p.image, p.status, c.name as category_name')
+                                                 ->from('products p')
+                                                 ->join('categories c', 'c.id = p.category_id', 'left')
+                                                 ->order_by('p.stock', 'ASC')
+                                                 ->limit(5)
+                                                 ->get()
+                                                 ->result();
+
+        // 8. Recent 5 Offline / Walk-in Orders
+        $data['recent_offline_orders'] = $this->db->select('id, order_number, shipping_full_name, shipping_mobile, total_amount, payment_status, order_status, created_at')
+                                                  ->where('order_type', 'offline')
+                                                  ->order_by('id', 'DESC')
+                                                  ->limit(5)
+                                                  ->get('orders')
+                                                  ->result();
+
         $data['title'] = 'Admin Dashboard - SRL Pixel LED\'s Glowing Hub';
         $data['breadcrumb'] = 'Dashboard';
 

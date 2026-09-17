@@ -2,6 +2,172 @@
 $is_standalone = isset($auth_layout) && $auth_layout;
 ?>
 
+<style>
+/* ============================================================
+   ADMIN REGISTER VIEW STYLES
+   ============================================================ */
+
+.auth-card {
+  width: 100%;
+  max-width: 460px;
+  background: rgba(18, 22, 33, 0.88);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-radius: 24px;
+  border: 1px solid rgba(255, 42, 133, 0.22);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), 0 0 40px rgba(255, 42, 133, 0.08);
+  padding: 38px 34px;
+  color: #ffffff;
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-card.auth-card-wide {
+  max-width: 620px;
+}
+
+.auth-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 12%;
+  right: 12%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--srl-pink), var(--srl-pink-glow), transparent);
+}
+
+.auth-logo-header {
+  text-align: center;
+  margin-bottom: 26px;
+}
+
+.auth-logo-header img {
+  max-height: 52px;
+  width: auto;
+  margin-bottom: 14px;
+  filter: drop-shadow(0 2px 12px rgba(255, 42, 133, 0.25));
+  transition: transform 0.3s ease;
+}
+
+.auth-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0 0 6px;
+  letter-spacing: -0.3px;
+}
+
+.auth-subtitle {
+  font-size: 0.88rem;
+  color: #94a3b8;
+  margin: 0;
+  line-height: 1.45;
+}
+
+.auth-form-label {
+  font-size: 0.88rem !important;
+  font-weight: 600 !important;
+  color: #e2e8f0 !important;
+  margin-bottom: 7px !important;
+  display: block;
+}
+
+.auth-input-group {
+  position: relative;
+  margin-bottom: 18px;
+}
+
+.auth-input-group .input-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #64748b;
+  font-size: 1.05rem;
+  pointer-events: none;
+  transition: color 0.2s ease;
+}
+
+.auth-input-group .form-control {
+  background-color: rgba(18, 22, 34, 0.85) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+  padding: 12px 14px 12px 42px;
+  border-radius: 12px;
+  font-size: 0.92rem;
+  transition: all 0.22s ease;
+}
+
+.auth-input-group .form-control:focus {
+  background-color: rgba(15, 19, 32, 0.98) !important;
+  border-color: var(--srl-pink) !important;
+  box-shadow: 0 0 0 3px rgba(255, 42, 133, 0.25), 0 0 16px rgba(255, 42, 133, 0.15);
+  color: #ffffff !important;
+}
+
+.auth-input-group:focus-within .input-icon {
+  color: var(--srl-pink-glow);
+}
+
+.auth-input-group .form-control::placeholder {
+  color: #94a3b8 !important;
+  opacity: 1 !important;
+}
+
+.auth-input-group .password-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #64748b;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  padding: 4px 8px;
+  font-size: 1rem;
+  transition: color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-input-group .password-toggle:hover {
+  color: var(--srl-pink-glow);
+}
+
+.auth-btn-submit {
+  width: 100%;
+  padding: 13px;
+  border-radius: 12px;
+  background: var(--srl-pink-gradient);
+  border: none;
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  box-shadow: 0 4px 20px rgba(255, 42, 133, 0.38);
+  transition: all 0.25s ease;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.auth-btn-submit:hover {
+  box-shadow: 0 8px 30px rgba(255, 42, 133, 0.55);
+  transform: translateY(-2px);
+  color: #ffffff;
+}
+
+.auth-footer-text {
+  text-align: center;
+  font-size: 0.88rem;
+  color: #94a3b8;
+  margin-top: 22px;
+}
+</style>
+
 <div class="<?= $is_standalone ? 'auth-card auth-card-wide' : 'card border-0 shadow-sm rounded-4' ?>" style="<?= !$is_standalone ? 'background: #ffffff; padding: 30px; border: 1px solid var(--srl-border) !important;' : '' ?>">
   <div class="<?= $is_standalone ? 'auth-logo-header' : 'mb-4 pb-3 border-bottom' ?>">
     <?php if ($is_standalone): ?>

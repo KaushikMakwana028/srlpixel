@@ -63,7 +63,10 @@
       <td class="text-muted small text-nowrap">
         <?= date('d M Y, h:i A', strtotime($ord->created_at)) ?>
       </td>
-      <td class="text-end">
+      <td class="text-end text-nowrap">
+        <a href="<?= base_url('admin/orders/invoice/' . $ord->id) ?>" target="_blank" class="btn btn-sm btn-outline-secondary rounded-pill px-2 py-1 me-1" title="Print / Download Invoice">
+          <i class="bi bi-printer"></i>
+        </a>
         <a href="<?= base_url('admin/orders/detail/' . $ord->id) ?>" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1" title="View details & update status">
           <i class="bi bi-eye me-1"></i>Details
         </a>

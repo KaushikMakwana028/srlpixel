@@ -1,7 +1,7 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-class Dashboard extends CI_Controller {
+class Profile extends CI_Controller {
 
     public function __construct()
     {
@@ -9,14 +9,14 @@ class Dashboard extends CI_Controller {
 
         // Guard: check if customer is logged in
         if (!$this->session->userdata('user_logged_in') || $this->session->userdata('user_role') != 0) {
-            $this->session->set_flashdata('error', 'Please sign in to access your customer dashboard.');
+            $this->session->set_flashdata('error', 'Please sign in to access your customer profile.');
             redirect('login');
             return;
         }
     }
 
     /**
-     * Customer Profile Dashboard & Profile Update
+     * Customer Profile & Account Management
      */
     public function index()
     {
@@ -31,20 +31,47 @@ class Dashboard extends CI_Controller {
             return;
         }
 
-        // Handle Profile Update POST
+        // Handle Profile Update POST (Profile Details + Optional Password Update)
         if ($this->input->server('REQUEST_METHOD') === 'POST' && $this->input->post('action') === 'update_profile') {
             $this->form_validation->set_rules('name', 'Full Name', 'trim|required|min_length[3]|max_length[150]');
+            $this->form_validation->set_rules('email', 'Email Address', 'trim|required|valid_email|max_length[150]');
             $this->form_validation->set_rules('phone', 'Phone Number', 'trim|max_length[30]');
-            $this->form_validation->set_rules('shop_name', 'Shop Name', 'trim|max_length[150]');
-            $this->form_validation->set_rules('gst_number', 'GST Number', 'trim|max_length[50]');
-            $this->form_validation->set_rules('address', 'Address', 'trim');
+
+            $current_password = $this->input->post('current_password');
+            $new_password     = $this->input->post('new_password');
+            $confirm_password = $this->input->post('confirm_password');
+
+            $is_changing_password = !empty($current_password) || !empty($new_password) || !empty($confirm_password);
+
+            if ($is_changing_password) {
+                $this->form_validation->set_rules('current_password', 'Current Password', 'required');
+                $this->form_validation->set_rules('new_password', 'New Password', 'required|min_length[6]');
+                $this->form_validation->set_rules('confirm_password', 'Confirm New Password', 'required|matches[new_password]');
+            }
 
             if ($this->form_validation->run() === TRUE) {
-                $name       = $this->input->post('name', TRUE);
-                $phone      = $this->input->post('phone', TRUE);
-                $shop_name  = $this->input->post('shop_name', TRUE);
-                $gst_number = $this->input->post('gst_number', TRUE);
-                $address    = $this->input->post('address', TRUE);
+                $name  = $this->input->post('name', TRUE);
+                $email = $this->input->post('email', TRUE);
+                $phone = $this->input->post('phone', TRUE);
+
+                // Check email uniqueness if modified
+                if (strtolower($email) !== strtolower($user->email)) {
+                    $existing = $this->General_model->getOne('user', ['email' => $email, 'id !=' => $user_id]);
+                    if ($existing) {
+                        $this->session->set_flashdata('error', 'The email address ' . html_escape($email) . ' is already registered with another account.');
+                        redirect('profile?tab=profile');
+                        return;
+                    }
+                }
+
+                // If user is attempting to change password, verify current password first
+                if ($is_changing_password) {
+                    if (!password_verify($current_password, $user->password)) {
+                        $this->session->set_flashdata('error', 'The current password you entered is incorrect.');
+                        redirect('profile?tab=profile');
+                        return;
+                    }
+                }
 
                 // Handle Profile Image Upload (Max 2MB)
                 $profile_image = $user->profile_image;
@@ -69,35 +96,39 @@ class Dashboard extends CI_Controller {
                         $profile_image = $upload_data['file_name'];
                     } else {
                         $this->session->set_flashdata('error', $this->upload->display_errors('', ''));
-                        redirect('dashboard?tab=profile');
+                        redirect('profile?tab=profile');
                         return;
                     }
                 }
 
                 $update_data = [
                     'name'          => $name,
+                    'email'         => $email,
                     'phone'         => $phone,
-                    'shop_name'     => $shop_name,
-                    'gst_number'    => $gst_number,
-                    'address'       => $address,
                     'profile_image' => $profile_image,
                     'updated_at'    => date('Y-m-d H:i:s')
                 ];
+
+                if ($is_changing_password) {
+                    $update_data['password'] = password_hash($new_password, PASSWORD_BCRYPT);
+                }
 
                 $this->General_model->update('user', ['id' => $user_id], $update_data);
 
                 // Update session info
                 $this->session->set_userdata([
                     'user_name'          => $name,
+                    'user_email'         => $email,
                     'user_profile_image' => $profile_image
                 ]);
 
-                $this->session->set_flashdata('success', 'Profile updated successfully!');
-                redirect('dashboard?tab=profile');
+                $success_msg = $is_changing_password ? 'Profile and password updated successfully!' : 'Profile updated successfully!';
+                $this->session->set_flashdata('success', $success_msg);
+                redirect('profile?tab=profile');
                 return;
             } else {
                 $this->session->set_flashdata('error', validation_errors('', ''));
-                redirect('dashboard?tab=profile');
+                redirect('profile?tab=profile');
                 return;
             }
         }
@@ -106,16 +137,29 @@ class Dashboard extends CI_Controller {
         $this->db->order_by('is_default DESC, id DESC');
         $data['addresses'] = $this->General_model->getAll('user_addresses', ['user_id' => $user_id]);
 
-        // Fetch user orders (Newest first)
-        $this->db->order_by('id DESC');
-        $data['orders'] = $this->General_model->getAll('orders', ['user_id' => $user_id]);
+        // Fetch user orders with pagination (Newest first, 5 per page)
+        $orders_limit = 5;
+        $orders_page = max(1, (int)$this->input->get('page'));
+        $orders_total = $this->General_model->count_filtered_data('orders', ['user_id' => $user_id]);
+        $orders_total_pages = max(1, ceil($orders_total / $orders_limit));
+        if ($orders_page > $orders_total_pages && $orders_total > 0) {
+            $orders_page = $orders_total_pages;
+        }
+        $orders_offset = ($orders_page - 1) * $orders_limit;
 
-        $data['active_tab'] = $this->input->get('tab') ? $this->input->get('tab') : 'profile';
+        $data['orders'] = $this->General_model->get_paginated_data('orders', ['user_id' => $user_id], [], $orders_limit, $orders_offset, 'id DESC');
+        $data['orders_total'] = $orders_total;
+        $data['orders_page'] = $orders_page;
+        $data['orders_limit'] = $orders_limit;
+        $data['orders_offset'] = $orders_offset;
+        $data['orders_total_pages'] = $orders_total_pages;
+
+        $data['active_tab'] = $this->input->get('tab') ? $this->input->get('tab') : ($this->input->get('page') ? 'orders' : 'profile');
         $data['user'] = $user;
-        $data['title'] = 'My Account - SRL Pixel';
+        $data['title'] = 'My Profile & Account - SRL Pixel';
 
         $this->load->view('header', $data);
-        $this->load->view('dashboard_view', $data);
+        $this->load->view('profile_view', $data);
         $this->load->view('footer', $data);
     }
 
@@ -143,7 +187,7 @@ class Dashboard extends CI_Controller {
                 return;
             }
             $this->session->set_flashdata('error', $err);
-            redirect('dashboard?tab=addresses');
+            redirect('profile?tab=addresses');
             return;
         }
 
@@ -187,7 +231,7 @@ class Dashboard extends CI_Controller {
         }
 
         $this->session->set_flashdata('success', 'New address added successfully!');
-        $redirect_to = $this->input->post('redirect_to') ? $this->input->post('redirect_to') : 'dashboard?tab=addresses';
+        $redirect_to = $this->input->post('redirect_to') ? $this->input->post('redirect_to') : 'profile?tab=addresses';
         redirect($redirect_to);
     }
 
@@ -205,7 +249,7 @@ class Dashboard extends CI_Controller {
                 return;
             }
             $this->session->set_flashdata('error', 'Address not found.');
-            redirect('dashboard?tab=addresses');
+            redirect('profile?tab=addresses');
             return;
         }
 
@@ -245,7 +289,7 @@ class Dashboard extends CI_Controller {
                 }
 
                 $this->session->set_flashdata('success', 'Address updated successfully!');
-                redirect('dashboard?tab=addresses');
+                redirect('profile?tab=addresses');
                 return;
             } else {
                 $err = validation_errors('', '');
@@ -254,7 +298,7 @@ class Dashboard extends CI_Controller {
                     return;
                 }
                 $this->session->set_flashdata('error', $err);
-                redirect('dashboard?tab=addresses');
+                redirect('profile?tab=addresses');
                 return;
             }
         }
@@ -298,7 +342,7 @@ class Dashboard extends CI_Controller {
             $this->session->set_flashdata('error', 'Address not found.');
         }
 
-        redirect('dashboard?tab=addresses');
+        redirect('profile?tab=addresses');
     }
 
     /**
@@ -329,7 +373,7 @@ class Dashboard extends CI_Controller {
             $this->session->set_flashdata('error', 'Address not found.');
         }
 
-        redirect('dashboard?tab=addresses');
+        redirect('profile?tab=addresses');
     }
 
     /**
@@ -342,7 +386,7 @@ class Dashboard extends CI_Controller {
 
         if (!$order) {
             $this->session->set_flashdata('error', 'Order not found or unauthorized.');
-            redirect('dashboard?tab=orders');
+            redirect('profile?tab=orders');
             return;
         }
 
@@ -376,7 +420,7 @@ class Dashboard extends CI_Controller {
 
                 if (!password_verify($current_password, $user->password)) {
                     $this->session->set_flashdata('error', 'The current password you entered is incorrect.');
-                    redirect('dashboard?tab=profile');
+                    redirect('profile?tab=profile');
                     return;
                 }
 
@@ -387,16 +431,16 @@ class Dashboard extends CI_Controller {
                 ]);
 
                 $this->session->set_flashdata('success', 'Password updated successfully!');
-                redirect('dashboard?tab=profile');
+                redirect('profile?tab=profile');
                 return;
             } else {
                 $this->session->set_flashdata('error', validation_errors('', ''));
-                redirect('dashboard?tab=profile');
+                redirect('profile?tab=profile');
                 return;
             }
         }
 
-        redirect('dashboard?tab=profile');
+        redirect('profile?tab=profile');
     }
 }
 

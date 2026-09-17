@@ -1,311 +1,901 @@
-<div class="container-fluid px-3 px-md-4 py-4">
-  <!-- Top Breadcrumb & Actions -->
-  <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
-    <div>
-      <div class="d-flex align-items-center gap-2 mb-1">
-        <a href="<?= base_url('admin/orders') ?>" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
-          <i class="bi bi-arrow-left me-1"></i>Back to Orders
-        </a>
-        <span class="text-muted">/</span>
-        <span class="fw-bold text-dark fs-5">Order #<?= html_escape($order->order_number) ?></span>
-      </div>
-      <p class="text-muted small mb-0">Placed on <?= date('d M Y, h:i A', strtotime($order->created_at)) ?></p>
-    </div>
+<style>
+  :root {
+    --srl-pink: #ec1e79;
+    --srl-pink-dark: #c9106a;
+    --ink: #0f172a;
+    --muted: #64748b;
+    --line: #e7eaf0;
+    --bg-soft: #f6f7fb;
+    --card-r: 16px;
+  }
 
-    <div class="d-flex align-items-center gap-2">
-      <?php
+  .od-wrap {
+    background: var(--bg-soft);
+    padding: 20px 16px 40px;
+  }
+
+  @media (min-width:768px) {
+    .od-wrap {
+      padding: 28px 28px 48px;
+    }
+  }
+
+  /* ---------- Top bar ---------- */
+  .od-topbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .od-crumb {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .od-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: .82rem;
+    font-weight: 600;
+    color: var(--muted);
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 6px 14px;
+    text-decoration: none;
+    transition: .15s;
+  }
+
+  .od-back:hover {
+    background: #fff0f6;
+    color: var(--srl-pink);
+    border-color: #fbcfe4;
+  }
+
+  .od-title-block h1 {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--ink);
+    margin: 2px 0 0;
+    letter-spacing: .2px;
+  }
+
+  .od-placed {
+    font-size: .78rem;
+    color: var(--muted);
+    margin: 0;
+  }
+
+  .od-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .btn-invoice {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: .85rem;
+    font-weight: 600;
+    color: var(--ink);
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 9px 18px;
+    text-decoration: none;
+    transition: .15s;
+  }
+
+  .btn-invoice:hover {
+    border-color: var(--srl-pink);
+    color: var(--srl-pink-dark);
+  }
+
+  .btn-invoice i {
+    color: var(--srl-pink);
+  }
+
+  .order-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: .82rem;
+    font-weight: 700;
+    border-radius: 999px;
+    padding: 9px 16px;
+    white-space: nowrap;
+  }
+
+  .status-badge-awaiting-payment {
+    background: #fff7ed;
+    color: #c2410c;
+  }
+
+  .status-badge-placed {
+    background: #eef2ff;
+    color: #4338ca;
+  }
+
+  .status-badge-confirmed {
+    background: #ecfdf5;
+    color: #047857;
+  }
+
+  .status-badge-packed {
+    background: #eff6ff;
+    color: #1d4ed8;
+  }
+
+  .status-badge-out-for-delivery {
+    background: #fdf4ff;
+    color: #a21caf;
+  }
+
+  .status-badge-delivered {
+    background: #f0fdf4;
+    color: #15803d;
+  }
+
+  .status-badge-cancelled {
+    background: #fef2f2;
+    color: #b91c1c;
+  }
+
+  /* ---------- Cards ---------- */
+  .od-card {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: var(--card-r);
+    box-shadow: 0 1px 2px rgba(15, 23, 42, .03);
+  }
+
+  .od-card+.od-card {
+    margin-top: 16px;
+  }
+
+  .od-card-hd {
+    display: flex;
+    align-items: center;
+    justify-content: between;
+    gap: 10px;
+    padding: 16px 18px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .od-card-hd h2 {
+    font-size: .95rem;
+    font-weight: 800;
+    color: var(--ink);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .od-card-hd h2 i {
+    color: var(--srl-pink);
+    font-size: .95rem;
+  }
+
+  .od-card-body {
+    padding: 18px;
+  }
+
+  .od-card-body.tight {
+    padding: 14px 18px;
+  }
+
+  .chip {
+    font-size: .72rem;
+    font-weight: 700;
+    color: var(--muted);
+    background: var(--bg-soft);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 4px 10px;
+  }
+
+  /* ---------- Items table ---------- */
+  .od-items {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .od-items thead th {
+    font-size: .68rem;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 700;
+    padding: 10px 18px;
+    background: var(--bg-soft);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .od-items tbody td {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: middle;
+  }
+
+  .od-items tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  .od-thumb {
+    width: 46px;
+    height: 46px;
+    object-fit: cover;
+    border-radius: 9px;
+    background: #0d1017;
+    flex: 0 0 auto;
+  }
+
+  .od-thumb-ph {
+    width: 46px;
+    height: 46px;
+    border-radius: 9px;
+    background: var(--bg-soft);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #a1a8b3;
+  }
+
+  .od-pname {
+    font-weight: 600;
+    color: var(--ink);
+    font-size: .9rem;
+  }
+
+  .od-sku {
+    font-size: .78rem;
+    color: var(--muted);
+  }
+
+  .qty-pill {
+    font-size: .76rem;
+    font-weight: 700;
+    color: var(--ink);
+    background: var(--bg-soft);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 3px 10px;
+    display: inline-block;
+  }
+
+  .od-summary {
+    padding: 6px 18px 18px;
+  }
+
+  .od-summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    font-size: .86rem;
+    color: var(--muted);
+  }
+
+  .od-summary-row strong {
+    color: var(--ink);
+    font-weight: 700;
+  }
+
+  .od-summary-row.total {
+    border-top: 1px dashed var(--line);
+    margin-top: 4px;
+    padding-top: 14px;
+  }
+
+  .od-summary-row.total span:first-child {
+    font-weight: 800;
+    color: var(--ink);
+    font-size: .95rem;
+  }
+
+  .od-summary-row.total strong {
+    font-size: 1.25rem;
+    color: var(--srl-pink);
+    font-weight: 800;
+  }
+
+  .od-free {
+    color: #16a34a;
+    font-weight: 700;
+  }
+
+  /* ---------- Status updater ---------- */
+  .form-label-sm {
+    font-size: .75rem;
+    font-weight: 700;
+    color: var(--muted);
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  .od-select,
+  .od-textarea {
+    width: 100%;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: .88rem;
+    color: var(--ink);
+    background: #fff;
+  }
+
+  .od-select:focus,
+  .od-textarea:focus {
+    outline: none;
+    border-color: var(--srl-pink);
+    box-shadow: 0 0 0 3px rgba(236, 30, 121, .12);
+  }
+
+  .btn-srl-primary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    border: none;
+    border-radius: 12px;
+    padding: 12px;
+    font-weight: 700;
+    font-size: .9rem;
+    color: #fff;
+    background: linear-gradient(135deg, var(--srl-pink), var(--srl-pink-dark));
+    box-shadow: 0 6px 16px rgba(236, 30, 121, .28);
+    transition: .15s;
+  }
+
+  .btn-srl-primary:hover {
+    filter: brightness(1.05);
+    transform: translateY(-1px);
+  }
+
+  .btn-srl-primary:disabled {
+    opacity: .7;
+    transform: none;
+  }
+
+  /* ---------- Info list (customer / shipping / payment combined) ---------- */
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: .85rem;
+  }
+
+  .info-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  .info-row .k {
+    color: var(--muted);
+    flex: 0 0 auto;
+  }
+
+  .info-row .v {
+    color: var(--ink);
+    font-weight: 600;
+    text-align: right;
+    word-break: break-word;
+  }
+
+  .addr-name {
+    font-weight: 700;
+    color: var(--ink);
+    font-size: .92rem;
+  }
+
+  .addr-phone {
+    font-size: .8rem;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 4px 0 10px;
+  }
+
+  .addr-text {
+    font-size: .85rem;
+    color: #475569;
+    line-height: 1.55;
+  }
+
+  .pay-badge {
+    font-size: .76rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 999px;
+  }
+
+  .pay-paid {
+    background: #ecfdf5;
+    color: #047857;
+  }
+
+  .pay-pending {
+    background: #fffbeb;
+    color: #b45309;
+  }
+
+  /* ---------- Layout grid ---------- */
+  .od-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    align-items: start;
+  }
+
+  @media (min-width:992px) {
+    .od-grid {
+      grid-template-columns: minmax(0, 1.65fr) minmax(300px, 1fr);
+      gap: 22px;
+    }
+  }
+
+  /* ---------- Mobile tweaks ---------- */
+  @media (max-width:767.98px) {
+    .od-topbar {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .od-actions {
+      justify-content: space-between;
+    }
+
+    .od-title-block h1 {
+      font-size: 1rem;
+    }
+
+    .od-items thead {
+      display: none;
+    }
+
+    .od-items tbody tr {
+      display: block;
+      padding: 14px 16px;
+    }
+
+    .od-items tbody td {
+      display: block;
+      padding: 3px 0;
+      border: none;
+    }
+
+    .od-items tbody tr+tr {
+      border-top: 1px solid var(--line);
+    }
+
+    .od-row-prod {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .od-row-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: .82rem;
+      color: var(--muted);
+    }
+
+    .od-row-total {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 6px;
+      font-size: .9rem;
+    }
+  }
+</style>
+
+<div class="od-wrap">
+  <div class="container-fluid p-0">
+
+    <!-- Top Bar -->
+    <div class="od-topbar">
+      <div class="od-crumb">
+        <a href="<?= base_url('admin/orders') ?>" class="od-back">
+          <i class="bi bi-arrow-left"></i> Back to Orders
+        </a>
+        <div class="od-title-block">
+          <h1>Order #<?= html_escape($order->order_number) ?></h1>
+          <p class="od-placed">Placed on <?= date('d M Y, h:i A', strtotime($order->created_at)) ?></p>
+        </div>
+      </div>
+
+      <div class="od-actions">
+        <a href="<?= base_url('admin/orders/invoice/' . $order->id) ?>" target="_blank" class="btn-invoice">
+          <i class="bi bi-printer-fill"></i> Print / Download Invoice
+        </a>
+        <?php
         $status_class = 'status-badge-placed';
         $status_icon  = 'bi bi-receipt';
-
         switch ($order->order_status) {
           case 'Awaiting Payment':
             $status_class = 'status-badge-awaiting-payment';
-            $status_icon  = 'bi bi-clock-history';
+            $status_icon = 'bi bi-clock-history';
             break;
           case 'Placed':
             $status_class = 'status-badge-placed';
-            $status_icon  = 'bi bi-receipt';
+            $status_icon = 'bi bi-receipt';
             break;
           case 'Confirmed':
             $status_class = 'status-badge-confirmed';
-            $status_icon  = 'bi bi-check-circle';
+            $status_icon = 'bi bi-check-circle';
             break;
           case 'Packed':
             $status_class = 'status-badge-packed';
-            $status_icon  = 'bi bi-box-seam';
+            $status_icon = 'bi bi-box-seam';
             break;
           case 'Out for Delivery':
             $status_class = 'status-badge-out-for-delivery';
-            $status_icon  = 'bi bi-truck';
+            $status_icon = 'bi bi-truck';
             break;
           case 'Delivered':
             $status_class = 'status-badge-delivered';
-            $status_icon  = 'bi bi-check-circle-fill';
+            $status_icon = 'bi bi-check-circle-fill';
             break;
           case 'Cancelled':
             $status_class = 'status-badge-cancelled';
-            $status_icon  = 'bi bi-x-circle';
+            $status_icon = 'bi bi-x-circle';
             break;
         }
-      ?>
-      <span class="order-status-badge <?= $status_class ?> fs-6 py-2 px-3" id="currentStatusBadge">
-        <i class="<?= $status_icon ?>" id="currentStatusIcon"></i> <span id="currentStatusText"><?= html_escape($order->order_status) ?></span>
-      </span>
+        ?>
+        <span class="order-status-badge <?= $status_class ?>" id="currentStatusBadge">
+          <i class="<?= $status_icon ?>" id="currentStatusIcon"></i>
+          <span id="currentStatusText"><?= html_escape($order->order_status) ?></span>
+        </span>
+      </div>
     </div>
-  </div>
 
-  <div class="row g-4">
-    <!-- Left Column: Ordered Items & Timeline -->
-    <div class="col-lg-8">
-      <!-- Products List Card -->
-      <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4" style="border: 1px solid #e2e8f0 !important;">
-        <div class="card-header bg-white border-bottom p-3 p-md-4 d-flex justify-content-between align-items-center">
-          <h5 class="fw-bold text-dark mb-0">Ordered Items (<?= count($items) ?>)</h5>
-          <span class="badge bg-light text-dark border">Currency: INR (₹)</span>
+    <!-- Grid -->
+    <div class="od-grid">
+
+      <!-- LEFT COLUMN -->
+      <div>
+        <div class="od-card">
+          <div class="od-card-hd">
+            <h2><i class="bi bi-bag-check"></i> Ordered Items (<?= count($items) ?>)</h2>
+            <span class="chip">INR ₹</span>
+          </div>
+
+          <div class="table-responsive d-none d-md-block">
+            <table class="od-items">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>SKU</th>
+                  <th class="text-end">Unit Price</th>
+                  <th class="text-center">Qty</th>
+                  <th class="text-end">Line Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <?php foreach ($items as $item): ?>
+                  <tr>
+                    <td>
+                      <div class="d-flex align-items-center gap-3">
+                        <?php if (!empty($item->product_image) && file_exists('./uploads/products/' . $item->product_image)): ?>
+                          <img src="<?= base_url('uploads/products/' . $item->product_image) ?>" alt="<?= html_escape($item->product_name) ?>" class="od-thumb">
+                        <?php else: ?>
+                          <div class="od-thumb-ph"><i class="bi bi-image"></i></div>
+                        <?php endif; ?>
+                        <span class="od-pname"><?= html_escape($item->product_name) ?></span>
+                      </div>
+                    </td>
+                    <td class="od-sku"><?= !empty($item->sku) ? html_escape($item->sku) : '—' ?></td>
+                    <td class="text-end fw-semibold"><?= '₹' . number_format($item->unit_price, 2) ?></td>
+                    <td class="text-center"><span class="qty-pill">× <?= (int)$item->quantity ?></span></td>
+                    <td class="text-end fw-bold"><?= '₹' . number_format($item->line_total, 2) ?></td>
+                  </tr>
+                <?php endforeach; ?>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Mobile stacked items -->
+          <div class="d-md-none">
+            <table class="od-items w-100">
+              <tbody>
+                <?php foreach ($items as $item): ?>
+                  <tr>
+                    <td>
+                      <div class="od-row-prod">
+                        <?php if (!empty($item->product_image) && file_exists('./uploads/products/' . $item->product_image)): ?>
+                          <img src="<?= base_url('uploads/products/' . $item->product_image) ?>" alt="<?= html_escape($item->product_name) ?>" class="od-thumb">
+                        <?php else: ?>
+                          <div class="od-thumb-ph"><i class="bi bi-image"></i></div>
+                        <?php endif; ?>
+                        <div>
+                          <div class="od-pname"><?= html_escape($item->product_name) ?></div>
+                          <div class="od-sku">SKU: <?= !empty($item->sku) ? html_escape($item->sku) : '—' ?></div>
+                        </div>
+                      </div>
+                      <div class="od-row-meta">
+                        <span><?= '₹' . number_format($item->unit_price, 2) ?> × <?= (int)$item->quantity ?></span>
+                        <span class="fw-bold text-dark"><?= '₹' . number_format($item->line_total, 2) ?></span>
+                      </div>
+                    </td>
+                  </tr>
+                <?php endforeach; ?>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="od-summary">
+            <div class="od-summary-row">
+              <span>Subtotal</span>
+              <strong><?= '₹' . number_format($order->subtotal, 2) ?></strong>
+            </div>
+            <div class="od-summary-row">
+              <span>Shipping Charges</span>
+              <span class="od-free">FREE</span>
+            </div>
+            <div class="od-summary-row total">
+              <span>Grand Total</span>
+              <strong><?= '₹' . number_format($order->total_amount, 2) ?></strong>
+            </div>
+          </div>
         </div>
 
-        <div class="table-responsive">
-          <table class="table align-middle mb-0">
-            <thead class="table-light text-uppercase small" style="font-size: 0.76rem;">
-              <tr>
-                <th>Product</th>
-                <th>SKU</th>
-                <th class="text-end">Unit Price</th>
-                <th class="text-center">Quantity</th>
-                <th class="text-end">Line Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              <?php foreach ($items as $item): ?>
-                <tr>
-                  <td>
-                    <div class="d-flex align-items-center gap-3">
-                      <?php if (!empty($item->product_image) && file_exists('./uploads/products/' . $item->product_image)): ?>
-                        <img src="<?= base_url('uploads/products/' . $item->product_image) ?>" alt="<?= html_escape($item->product_name) ?>" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px; background: #0d1017;">
-                      <?php else: ?>
-                        <div class="d-flex align-items-center justify-content-center bg-light text-muted rounded-2" style="width: 50px; height: 50px;">
-                          <i class="bi bi-image fs-5"></i>
-                        </div>
-                      <?php endif; ?>
-                      <div class="fw-semibold text-dark"><?= html_escape($item->product_name) ?></div>
-                    </div>
-                  </td>
-                  <td class="text-muted small"><?= !empty($item->sku) ? html_escape($item->sku) : '—' ?></td>
-                  <td class="text-end fw-semibold text-dark">₹<?= number_format($item->unit_price, 2) ?></td>
-                  <td class="text-center"><span class="badge bg-light text-dark border px-2 py-1">× <?= (int)$item->quantity ?></span></td>
-                  <td class="text-end fw-bold text-dark">₹<?= number_format($item->line_total, 2) ?></td>
-                </tr>
-              <?php endforeach; ?>
-            </tbody>
-            <tfoot class="table-light">
-              <tr>
-                <td colspan="4" class="text-end fw-semibold text-muted">Subtotal:</td>
-                <td class="text-end fw-bold text-dark">₹<?= number_format($order->subtotal, 2) ?></td>
-              </tr>
-              <tr>
-                <td colspan="4" class="text-end fw-semibold text-muted">Shipping Charges:</td>
-                <td class="text-end text-success fw-bold">FREE</td>
-              </tr>
-              <tr>
-                <td colspan="4" class="text-end fw-extrabold text-dark fs-6">Grand Total:</td>
-                <td class="text-end fw-extrabold fs-5" style="color: var(--srl-pink);">
-                  ₹<?= number_format($order->total_amount, 2) ?>
-                </td>
-              </tr>
-            </tfoot>
-          </table>
+        <?php if (!empty($order->notes)): ?>
+          <div class="od-card">
+            <div class="od-card-hd">
+              <h2><i class="bi bi-journal-text"></i> Customer / Order Notes</h2>
+            </div>
+            <div class="od-card-body tight">
+              <p class="mb-0" style="font-size:.86rem;color:#475569;line-height:1.6;">
+                <?= nl2br(html_escape($order->notes)) ?>
+              </p>
+            </div>
+          </div>
+        <?php endif; ?>
+
+        <!-- Payment Info moved here on desktop to balance columns -->
+        <div class="od-card d-none d-lg-block">
+          <div class="od-card-hd">
+            <h2><i class="bi bi-credit-card"></i> Payment Info</h2>
+          </div>
+          <div class="od-card-body tight">
+            <div class="info-row">
+              <span class="k">Method</span>
+              <span class="chip"><?= html_escape($order->payment_method) ?></span>
+            </div>
+            <div class="info-row">
+              <span class="k">Status</span>
+              <span class="pay-badge <?= ($order->payment_status === 'Paid') ? 'pay-paid' : 'pay-pending' ?>">
+                <?= html_escape($order->payment_status) ?>
+              </span>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- Notes / Internal Log Card -->
-      <?php if (!empty($order->notes)): ?>
-        <div class="card border-0 shadow-sm rounded-4 p-4 mb-4" style="border: 1px solid #e2e8f0 !important; background: #ffffff;">
-          <h6 class="fw-bold text-dark mb-2"><i class="bi bi-journal-text me-2 text-primary"></i>Customer / Order Notes</h6>
-          <p class="text-secondary small mb-0"><?= nl2br(html_escape($order->notes)) ?></p>
-        </div>
-      <?php endif; ?>
-    </div>
+      <!-- RIGHT COLUMN -->
+      <div>
+        <!-- Status Updater -->
+        <div class="od-card">
+          <div class="od-card-hd">
+            <h2><i class="bi bi-sliders"></i> Update Order Status</h2>
+          </div>
+          <div class="od-card-body">
+            <p class="text-muted mb-3" style="font-size:.8rem;">
+              Changing status here immediately updates customer tracking in real time.
+            </p>
 
-    <!-- Right Column: Status Updater & Customer Shipping -->
-    <div class="col-lg-4">
-      <!-- Status Updater Widget -->
-      <div class="card border-0 shadow-sm rounded-4 p-4 mb-4" style="border: 1px solid #e2e8f0 !important; background: #ffffff;">
-        <h6 class="fw-bold text-dark mb-3"><i class="bi bi-sliders me-2 text-danger" style="color: var(--srl-pink) !important;"></i>Update Order Status</h6>
-        <p class="text-muted small mb-3">Changing status here immediately updates customer tracking in real time.</p>
+            <?= form_open('admin/orders/update_status', ['id' => 'statusUpdateForm']) ?>
+            <input type="hidden" name="order_id" value="<?= $order->id ?>">
 
-        <?= form_open('admin/orders/update_status', ['id' => 'statusUpdateForm']) ?>
-          <input type="hidden" name="order_id" value="<?= $order->id ?>">
-
-          <div class="mb-3">
-            <label class="form-label small fw-bold text-secondary">Order Status</label>
-            <select name="status" id="orderStatusSelect" class="form-select" required>
-              <?php
+            <div class="mb-3">
+              <label class="form-label-sm">Order Status</label>
+              <select name="status" id="orderStatusSelect" class="od-select" required>
+                <?php
                 $statuses = ['Awaiting Payment', 'Placed', 'Confirmed', 'Packed', 'Out for Delivery', 'Delivered', 'Cancelled'];
                 foreach ($statuses as $st):
-              ?>
-                <option value="<?= $st ?>" <?= ($order->order_status === $st) ? 'selected' : '' ?>>
-                  <?= $st ?>
-                </option>
-              <?php endforeach; ?>
-            </select>
+                ?>
+                  <option value="<?= $st ?>" <?= ($order->order_status === $st) ? 'selected' : '' ?>><?= $st ?></option>
+                <?php endforeach; ?>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label-sm">Admin Remarks / Notes (Optional)</label>
+              <textarea name="notes" rows="3" class="od-textarea" placeholder="e.g. Courier tracking code or update reason"><?= html_escape($order->notes) ?></textarea>
+            </div>
+
+            <button type="submit" class="btn-srl-primary" id="btnUpdateStatus">
+              <i class="bi bi-check2-circle"></i> Save Status Update
+            </button>
+            <?= form_close() ?>
           </div>
+        </div>
 
-          <div class="mb-3">
-            <label class="form-label small fw-bold text-secondary">Admin Remarks / Notes (Optional)</label>
-            <textarea name="notes" rows="2" class="form-control small" placeholder="e.g. Courier tracking code or update reason"><?= html_escape($order->notes) ?></textarea>
+        <!-- Customer + Shipping combined -->
+        <div class="od-card">
+          <div class="od-card-hd">
+            <h2><i class="bi bi-person-badge"></i> Customer</h2>
           </div>
-
-          <button type="submit" class="btn-srl-primary w-100 py-2 justify-content-center" id="btnUpdateStatus">
-            <i class="bi bi-check2-circle me-1"></i>Save Status Update
-          </button>
-        <?= form_close() ?>
-      </div>
-
-      <!-- Customer Details Card -->
-      <div class="card border-0 shadow-sm rounded-4 p-4 mb-4" style="border: 1px solid #e2e8f0 !important; background: #ffffff;">
-        <h6 class="fw-bold text-dark mb-3"><i class="bi bi-person-badge me-2 text-primary"></i>Customer Profile</h6>
-        <ul class="list-unstyled small mb-0">
-          <li class="d-flex justify-content-between py-1 border-bottom">
-            <span class="text-muted">Name:</span>
-            <strong class="text-dark"><?= $customer ? html_escape($customer->name) : html_escape($order->shipping_full_name) ?></strong>
-          </li>
-          <li class="d-flex justify-content-between py-1 border-bottom">
-            <span class="text-muted">Email:</span>
-            <span class="text-dark text-break"><?= $customer ? html_escape($customer->email) : 'N/A' ?></span>
-          </li>
-          <li class="d-flex justify-content-between py-1 border-bottom">
-            <span class="text-muted">Mobile:</span>
-            <span class="text-dark"><?= html_escape($order->shipping_mobile) ?></span>
-          </li>
-          <?php if ($customer && !empty($customer->shop_name)): ?>
-            <li class="d-flex justify-content-between py-1 border-bottom">
-              <span class="text-muted">Shop:</span>
-              <span class="text-dark"><?= html_escape($customer->shop_name) ?></span>
-            </li>
-          <?php endif; ?>
-          <?php if ($customer && !empty($customer->gst_number)): ?>
-            <li class="d-flex justify-content-between py-1">
-              <span class="text-muted">GST:</span>
-              <span class="badge bg-light text-dark border"><?= html_escape($customer->gst_number) ?></span>
-            </li>
-          <?php endif; ?>
-        </ul>
-      </div>
-
-      <!-- Shipping Address Card -->
-      <div class="card border-0 shadow-sm rounded-4 p-4 mb-4" style="border: 1px solid #e2e8f0 !important; background: #ffffff;">
-        <h6 class="fw-bold text-dark mb-3"><i class="bi bi-geo-alt-fill me-2 text-danger" style="color: var(--srl-pink) !important;"></i>Shipping Address</h6>
-        <div class="fw-bold text-dark mb-1"><?= html_escape($order->shipping_full_name) ?></div>
-        <div class="text-muted small mb-2"><i class="bi bi-telephone me-1"></i><?= html_escape($order->shipping_mobile) ?></div>
-        <p class="text-secondary small mb-0" style="line-height: 1.5;">
-          <?= html_escape($order->shipping_address_line1) ?><br>
-          <?php if (!empty($order->shipping_address_line2)): ?>
-            <?= html_escape($order->shipping_address_line2) ?><br>
-          <?php endif; ?>
-          <?php if (!empty($order->shipping_landmark)): ?>
-            Landmark: <?= html_escape($order->shipping_landmark) ?><br>
-          <?php endif; ?>
-          <?= html_escape($order->shipping_city) ?>, <?= html_escape($order->shipping_state) ?> - <strong><?= html_escape($order->shipping_pincode) ?></strong><br>
-          <?= html_escape($order->shipping_country) ?>
-        </p>
-      </div>
-
-      <!-- Payment Summary Card -->
-      <div class="card border-0 shadow-sm rounded-4 p-4" style="border: 1px solid #e2e8f0 !important; background: #ffffff;">
-        <h6 class="fw-bold text-dark mb-3"><i class="bi bi-credit-card me-2 text-success"></i>Payment Info</h6>
-        <div class="d-flex justify-content-between align-items-center mb-2 small">
-          <span class="text-muted">Method:</span>
-          <span class="badge bg-light text-dark border"><?= html_escape($order->payment_method) ?></span>
+          <div class="od-card-body tight">
+            <div class="info-row">
+              <span class="k">Name</span>
+              <span class="v"><?= $customer ? html_escape($customer->name) : html_escape($order->shipping_full_name) ?></span>
+            </div>
+            <div class="info-row">
+              <span class="k">Email</span>
+              <span class="v"><?= $customer ? html_escape($customer->email) : 'N/A' ?></span>
+            </div>
+            <div class="info-row">
+              <span class="k">Mobile</span>
+              <span class="v"><?= html_escape($order->shipping_mobile) ?></span>
+            </div>
+            <?php if ($customer && !empty($customer->shop_name)): ?>
+              <div class="info-row">
+                <span class="k">Shop</span>
+                <span class="v"><?= html_escape($customer->shop_name) ?></span>
+              </div>
+            <?php endif; ?>
+            <?php if ($customer && !empty($customer->gst_number)): ?>
+              <div class="info-row">
+                <span class="k">GST</span>
+                <span class="chip"><?= html_escape($customer->gst_number) ?></span>
+              </div>
+            <?php endif; ?>
+          </div>
         </div>
-        <div class="d-flex justify-content-between align-items-center small">
-          <span class="text-muted">Status:</span>
-          <span class="badge bg-<?= ($order->payment_status === 'Paid') ? 'success' : 'warning text-dark' ?>">
-            <?= html_escape($order->payment_status) ?>
-          </span>
+
+        <div class="od-card">
+          <div class="od-card-hd">
+            <h2><i class="bi bi-geo-alt-fill"></i> Shipping Address</h2>
+          </div>
+          <div class="od-card-body tight">
+            <div class="addr-name"><?= html_escape($order->shipping_full_name) ?></div>
+            <div class="addr-phone"><i class="bi bi-telephone"></i> <?= html_escape($order->shipping_mobile) ?></div>
+            <div class="addr-text">
+              <?= html_escape($order->shipping_address_line1) ?><br>
+              <?php if (!empty($order->shipping_address_line2)): ?>
+                <?= html_escape($order->shipping_address_line2) ?><br>
+              <?php endif; ?>
+              <?php if (!empty($order->shipping_landmark)): ?>
+                Landmark: <?= html_escape($order->shipping_landmark) ?><br>
+              <?php endif; ?>
+              <?= html_escape($order->shipping_city) ?>, <?= html_escape($order->shipping_state) ?> - <strong><?= html_escape($order->shipping_pincode) ?></strong><br>
+              <?= html_escape($order->shipping_country) ?>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment Info: shown here on mobile/tablet only -->
+        <div class="od-card d-lg-none">
+          <div class="od-card-hd">
+            <h2><i class="bi bi-credit-card"></i> Payment Info</h2>
+          </div>
+          <div class="od-card-body tight">
+            <div class="info-row">
+              <span class="k">Method</span>
+              <span class="chip"><?= html_escape($order->payment_method) ?></span>
+            </div>
+            <div class="info-row">
+              <span class="k">Status</span>
+              <span class="pay-badge <?= ($order->payment_status === 'Paid') ? 'pay-paid' : 'pay-pending' ?>">
+                <?= html_escape($order->payment_status) ?>
+              </span>
+            </div>
+          </div>
         </div>
       </div>
+
     </div>
   </div>
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-  const form = document.getElementById('statusUpdateForm');
-  if (form) {
-    form.addEventListener('submit', function (e) {
-      e.preventDefault();
-      const submitBtn = document.getElementById('btnUpdateStatus');
-      submitBtn.disabled = true;
-      submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Saving...';
+  document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('statusUpdateForm');
+    if (form) {
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const submitBtn = document.getElementById('btnUpdateStatus');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Saving...';
 
-      const formData = new FormData(this);
+        const formData = new FormData(this);
 
-      fetch(this.action, {
-        method: 'POST',
-        body: formData,
-        headers: { 'X-Requested-With': 'XMLHttpRequest' }
-      })
-        .then(res => res.json())
-        .then(data => {
-          submitBtn.disabled = false;
-          submitBtn.innerHTML = '<i class="bi bi-check2-circle me-1"></i>Save Status Update';
-
-          if (data.success) {
-            Swal.fire({
-              title: 'Status Updated!',
-              text: data.message,
-              icon: 'success',
-              confirmButtonText: 'OK',
-              customClass: {
-                popup: 'srl-swal-popup',
-                title: 'srl-swal-title',
-                confirmButton: 'srl-swal-confirm'
-              },
-              buttonsStyling: false
-            });
-
-            // Update badge dynamically on screen
-            const textEl = document.getElementById('currentStatusText');
-            const badgeEl = document.getElementById('currentStatusBadge');
-            const iconEl = document.getElementById('currentStatusIcon');
-
-            if (textEl) textEl.textContent = data.status;
-
-            // Remove all status classes and apply new one
-            if (badgeEl) {
-              badgeEl.className = 'order-status-badge fs-6 py-2 px-3';
-              let sClass = 'status-badge-placed';
-              let sIcon = 'bi bi-receipt';
-
-              switch (data.status) {
-                case 'Awaiting Payment':
-                  sClass = 'status-badge-awaiting-payment'; sIcon = 'bi bi-clock-history'; break;
-                case 'Placed':
-                  sClass = 'status-badge-placed'; sIcon = 'bi bi-receipt'; break;
-                case 'Confirmed':
-                  sClass = 'status-badge-confirmed'; sIcon = 'bi bi-check-circle'; break;
-                case 'Packed':
-                  sClass = 'status-badge-packed'; sIcon = 'bi bi-box-seam'; break;
-                case 'Out for Delivery':
-                  sClass = 'status-badge-out-for-delivery'; sIcon = 'bi bi-truck'; break;
-                case 'Delivered':
-                  sClass = 'status-badge-delivered'; sIcon = 'bi bi-check-circle-fill'; break;
-                case 'Cancelled':
-                  sClass = 'status-badge-cancelled'; sIcon = 'bi bi-x-circle'; break;
-              }
-              badgeEl.classList.add(sClass);
-              if (iconEl) iconEl.className = sIcon;
+        fetch(this.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+              'X-Requested-With': 'XMLHttpRequest'
             }
-          } else {
-            Swal.fire('Error', data.message || 'Failed to update order status.', 'error');
-          }
-        })
-        .catch(err => {
-          submitBtn.disabled = false;
-          submitBtn.innerHTML = '<i class="bi bi-check2-circle me-1"></i>Save Status Update';
-          Swal.fire('Error', 'An unexpected error occurred.', 'error');
-        });
-    });
-  }
-});
+          })
+          .then(res => res.json())
+          .then(data => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="bi bi-check2-circle"></i> Save Status Update';
+
+            if (data.success) {
+              Swal.fire({
+                title: 'Status Updated!',
+                text: data.message,
+                icon: 'success',
+                confirmButtonText: 'OK',
+                customClass: {
+                  popup: 'srl-swal-popup',
+                  title: 'srl-swal-title',
+                  confirmButton: 'srl-swal-confirm'
+                },
+                buttonsStyling: false
+              });
+
+              const textEl = document.getElementById('currentStatusText');
+              const badgeEl = document.getElementById('currentStatusBadge');
+              const iconEl = document.getElementById('currentStatusIcon');
+
+              if (textEl) textEl.textContent = data.status;
+
+              if (badgeEl) {
+                badgeEl.className = 'order-status-badge';
+                let sClass = 'status-badge-placed';
+                let sIcon = 'bi bi-receipt';
+
+                switch (data.status) {
+                  case 'Awaiting Payment':
+                    sClass = 'status-badge-awaiting-payment';
+                    sIcon = 'bi bi-clock-history';
+                    break;
+                  case 'Placed':
+                    sClass = 'status-badge-placed';
+                    sIcon = 'bi bi-receipt';
+                    break;
+                  case 'Confirmed':
+                    sClass = 'status-badge-confirmed';
+                    sIcon = 'bi bi-check-circle';
+                    break;
+                  case 'Packed':
+                    sClass = 'status-badge-packed';
+                    sIcon = 'bi bi-box-seam';
+                    break;
+                  case 'Out for Delivery':
+                    sClass = 'status-badge-out-for-delivery';
+                    sIcon = 'bi bi-truck';
+                    break;
+                  case 'Delivered':
+                    sClass = 'status-badge-delivered';
+                    sIcon = 'bi bi-check-circle-fill';
+                    break;
+                  case 'Cancelled':
+                    sClass = 'status-badge-cancelled';
+                    sIcon = 'bi bi-x-circle';
+                    break;
+                }
+                badgeEl.classList.add(sClass);
+                if (iconEl) iconEl.className = sIcon;
+              }
+            } else {
+              Swal.fire('Error', data.message || 'Failed to update order status.', 'error');
+            }
+          })
+          .catch(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="bi bi-check2-circle"></i> Save Status Update';
+            Swal.fire('Error', 'An unexpected error occurred.', 'error');
+          });
+      });
+    }
+  });
 </script>

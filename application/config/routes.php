@@ -77,7 +77,16 @@ $route['admin/products/add'] = 'admin/Products/add';
 $route['admin/products/edit/(:num)'] = 'admin/Products/edit/$1';
 $route['admin/products/delete/(:num)'] = 'admin/Products/delete/$1';
 $route['admin/products/status/(:num)'] = 'admin/Products/status/$1';
-$route['admin/products/delete_gallery_image/(:num)/(:num)'] = 'admin/Products/delete_gallery_image/$1/$2';
+// Admin Home Banners Management
+$route['admin/home_banners']                      = 'admin/Home_banners/index';
+$route['admin/home_banners/ajax_list']            = 'admin/Home_banners/ajax_list';
+$route['admin/home_banners/add']                  = 'admin/Home_banners/add';
+$route['admin/home_banners/create']               = 'admin/Home_banners/add';
+$route['admin/home_banners/edit/(:num)']          = 'admin/Home_banners/edit/$1';
+$route['admin/home_banners/delete/(:num)']        = 'admin/Home_banners/delete/$1';
+$route['admin/home_banners/toggle_status/(:num)'] = 'admin/Home_banners/toggle_status/$1';
+$route['admin/home_banners/status/(:num)']        = 'admin/Home_banners/toggle_status/$1';
+$route['admin/banners']                           = 'admin/Home_banners/index';
 
 // Admin Customer Listing
 $route['admin/customers'] = 'admin/Customers/index';
@@ -90,6 +99,23 @@ $route['admin/orders'] = 'admin/Orders/index';
 $route['admin/orders/ajax_list'] = 'admin/Orders/ajax_list';
 $route['admin/orders/detail/(:num)'] = 'admin/Orders/detail/$1';
 $route['admin/orders/update_status'] = 'admin/Orders/update_status';
+
+// Admin Offline Orders Management (POS / Counter Sales)
+$route['admin/offline_orders']                        = 'admin/Offline_orders/index';
+$route['admin/offline_orders/ajax_list']              = 'admin/Offline_orders/ajax_list';
+$route['admin/offline_orders/create']                 = 'admin/Offline_orders/create';
+$route['admin/offline_orders/store']                  = 'admin/Offline_orders/store';
+$route['admin/offline_orders/detail/(:num)']          = 'admin/Offline_orders/detail/$1';
+$route['admin/offline_orders/search_customers']       = 'admin/Offline_orders/search_customers';
+$route['admin/offline_orders/search_products']        = 'admin/Offline_orders/search_products';
+$route['admin/offline_orders/update_status']          = 'admin/Offline_orders/update_status';
+$route['admin/offline_orders/update_payment_status']  = 'admin/Offline_orders/update_payment_status';
+$route['admin/offline_orders/invoice/(:num)']         = 'admin/Offline_orders/invoice/$1';
+$route['admin/offline_orders/edit/(:num)']            = 'admin/Offline_orders/edit/$1';
+$route['admin/offline_orders/update/(:num)']          = 'admin/Offline_orders/update/$1';
+$route['admin/offline_orders/update']                 = 'admin/Offline_orders/update';
+$route['admin/offline_orders/delete/(:num)']          = 'admin/Offline_orders/delete/$1';
+$route['admin/offline_orders/delete']                 = 'admin/Offline_orders/delete';
 
 // Customer / User Portal Routes
 $route['home'] = 'Home/index';
@@ -108,16 +134,40 @@ $route['cart/remove/(:num)'] = 'Cart/remove/$1';
 $route['cart/clear'] = 'Cart/clear';
 $route['cart/checkout'] = 'Cart/checkout';
 
+// Step-by-Step Checkout & Orders Flow
+$route['checkout'] = 'Checkout/index';
+$route['checkout/add_address'] = 'Checkout/add_address';
+$route['checkout/place_order'] = 'Checkout/place_order';
+$route['checkout/razorpay_create_order'] = 'Checkout/razorpay_create_order';
+$route['checkout/razorpay_verify'] = 'Checkout/razorpay_verify';
+$route['order/success/(:num)'] = 'Checkout/success/$1';
+$route['order/invoice/(:num)'] = 'Checkout/invoice/$1';
+
 $route['login'] = 'Login/index';
 $route['register'] = 'Login/register';
 $route['logout'] = 'Login/logout';
 
-// Customer Dashboard, Addresses & Orders
-$route['dashboard'] = 'Dashboard/index';
-$route['dashboard/add_address'] = 'Dashboard/add_address';
-$route['dashboard/edit_address/(:num)'] = 'Dashboard/edit_address/$1';
-$route['dashboard/delete_address/(:num)'] = 'Dashboard/delete_address/$1';
-$route['dashboard/set_default_address/(:num)'] = 'Dashboard/set_default_address/$1';
-$route['dashboard/order/(:num)'] = 'Dashboard/order/$1';
-$route['dashboard/change_password'] = 'Dashboard/change_password';
+// Customer Profile, Addresses & Orders
+$route['profile'] = 'Profile/index';
+$route['profile/add_address'] = 'Profile/add_address';
+$route['profile/edit_address/(:num)'] = 'Profile/edit_address/$1';
+$route['profile/delete_address/(:num)'] = 'Profile/delete_address/$1';
+$route['profile/set_default_address/(:num)'] = 'Profile/set_default_address/$1';
+$route['profile/order/(:num)'] = 'Profile/order/$1';
+$route['profile/invoice/(:num)'] = 'Checkout/invoice/$1';
+$route['profile/change_password'] = 'Profile/change_password';
+
+// Backward-compatible dashboard aliases
+$route['dashboard'] = 'Profile/index';
+$route['dashboard/add_address'] = 'Profile/add_address';
+$route['dashboard/edit_address/(:num)'] = 'Profile/edit_address/$1';
+$route['dashboard/delete_address/(:num)'] = 'Profile/delete_address/$1';
+$route['dashboard/set_default_address/(:num)'] = 'Profile/set_default_address/$1';
+$route['dashboard/order/(:num)'] = 'Profile/order/$1';
+$route['dashboard/invoice/(:num)'] = 'Checkout/invoice/$1';
+$route['dashboard/change_password'] = 'Profile/change_password';
+
+// Admin Invoice Route
+$route['admin/orders/invoice/(:num)'] = 'admin/Orders/invoice/$1';
+
 

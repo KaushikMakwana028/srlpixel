@@ -45,39 +45,89 @@ class Home extends CI_Controller {
         $data['category_products'] = $category_products;
         $data['all_products'] = $products;
 
-        // 3. Curated Hero Slider Slides with Real High-Definition Product Photos
-        $data['slides'] = [
-            [
-                'badge'       => 'NEW ARRIVALS 2026',
-                'title'       => 'WS2812B & SPI Digital Pixel LED Strips',
-                'subtitle'    => 'Individually addressable dream-color LED lighting with ultra-bright IC control for architectural and festival decor.',
-                'btn_text'    => 'Shop Pixel Strips',
-                'btn_link'    => base_url('category/1'),
-                'bg_gradient' => 'linear-gradient(135deg, #131722 0%, #29102b 50%, #0d1017 100%)',
-                'icon'        => 'bi-rainbow',
-                'image'       => 'assets/images/slide_pixel_strip.jpg'
-            ],
-            [
-                'badge'       => 'STAGE & FAÇADE CONTROL',
-                'title'       => 'K-1000C & Art-Net Smart Pixel Controllers',
-                'subtitle'    => 'Seamless SD card programming and DMX512 synchronization for concerts, clubs, and building elevations.',
-                'btn_text'    => 'Explore Controllers',
-                'btn_link'    => base_url('category/3'),
-                'bg_gradient' => 'linear-gradient(135deg, #0d1527 0%, #1e1b3d 50%, #0c0e17 100%)',
-                'icon'        => 'bi-sliders2-vertical',
-                'image'       => 'assets/images/slide_controller.jpg'
-            ],
-            [
-                'badge'       => 'WATERPROOF ARCHITECTURAL',
-                'title'       => 'Flexible 12V Silicone Neon Flex RGB Lights',
-                'subtitle'    => 'Smooth dot-free silicone diffuse illumination designed for signs, interior accents, and commercial spaces.',
-                'btn_text'    => 'Discover Neon Flex',
-                'btn_link'    => base_url('category/2'),
-                'bg_gradient' => 'linear-gradient(135deg, #241128 0%, #131929 50%, #0a0d16 100%)',
-                'icon'        => 'bi-magic',
-                'image'       => 'assets/images/slide_neon_flex.jpg'
-            ]
-        ];
+        // 3. Dynamic Full Banner Hero Showcase from Database (Admin added banners)
+        $today = date('Y-m-d');
+        $this->db->select('*');
+        $this->db->from('home_banners');
+        $this->db->where('status', 1);
+        $this->db->where('banner_type', 'home');
+        $this->db->group_start();
+            $this->db->where('start_date IS NULL', null, false);
+            $this->db->or_where('start_date <=', $today);
+        $this->db->group_end();
+        $this->db->group_start();
+            $this->db->where('end_date IS NULL', null, false);
+            $this->db->or_where('end_date >=', $today);
+        $this->db->group_end();
+        $this->db->order_by('display_order ASC, id DESC');
+        $db_banners = $this->db->get()->result();
+
+        $slides = [];
+        if (!empty($db_banners)) {
+            foreach ($db_banners as $b) {
+                $img_path = 'assets/images/banner_1.png';
+                if (!empty($b->image)) {
+                    if (file_exists('./uploads/banners/' . $b->image)) {
+                        $img_path = 'uploads/banners/' . $b->image;
+                    } elseif (file_exists('./assets/images/' . $b->image)) {
+                        $img_path = 'assets/images/' . $b->image;
+                    } else {
+                        $img_path = 'uploads/banners/' . $b->image;
+                    }
+                }
+
+                $btn_link = base_url('products');
+                if (!empty($b->button_link)) {
+                    $btn_link = (strpos($b->button_link, 'http') === 0) ? $b->button_link : base_url(ltrim($b->button_link, '/'));
+                }
+
+                $slides[] = [
+                    'id'          => $b->id,
+                    'badge'       => !empty($b->badge_text) ? $b->badge_text : 'FEATURED SHOWCASE',
+                    'title'       => $b->title,
+                    'subtitle'    => $b->subtitle,
+                    'btn_text'    => !empty($b->button_text) ? $b->button_text : 'Shop Now',
+                    'btn_link'    => $btn_link,
+                    'icon'        => 'bi-lightning-charge-fill',
+                    'banner_img'  => $img_path
+                ];
+            }
+        }
+
+        // Fallback to default slides if no banners configured
+        if (empty($slides)) {
+            $slides = [
+                [
+                    'badge'       => 'EXCLUSIVE COLLECTION 2026',
+                    'title'       => 'Designer Ambient & Vintage Pendant Lighting',
+                    'subtitle'    => 'Warm Edison filament glow, industrial geometric accents, and architectural pendant illumination for premium spaces.',
+                    'btn_text'    => 'Explore Designer Lights',
+                    'btn_link'    => base_url('products'),
+                    'icon'        => 'bi-lightbulb-fill',
+                    'banner_img'  => 'assets/images/banner_1.png'
+                ],
+                [
+                    'badge'       => 'DREAM-COLOR INNOVATION',
+                    'title'       => 'Digital RGB Pixel Strips & Flexible Neon Flex',
+                    'subtitle'    => 'Individually addressable chasing LEDs, programmable dynamic color waves, and waterproof architectural neon ropes.',
+                    'btn_text'    => 'Shop Pixel Strips',
+                    'btn_link'    => base_url('category/1'),
+                    'icon'        => 'bi-rainbow',
+                    'banner_img'  => 'assets/images/banner_2.jpg'
+                ],
+                [
+                    'badge'       => 'SMART STAGE & FAÇADE CONTROL',
+                    'title'       => 'Programmable Pixel Controllers & DMX Consoles',
+                    'subtitle'    => 'Seamless SD-card programming, Art-Net synchronization, and master control hardware for concerts and architectural facades.',
+                    'btn_text'    => 'Discover Controllers',
+                    'btn_link'    => base_url('category/3'),
+                    'icon'        => 'bi-sliders2-vertical',
+                    'banner_img'  => 'assets/images/banner_3.jpg'
+                ]
+            ];
+        }
+
+        $data['slides'] = $slides;
 
         // 4. Shopping Event / Mega Offer Details
         $data['offer_event'] = [

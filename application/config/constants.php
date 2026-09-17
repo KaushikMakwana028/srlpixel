@@ -83,3 +83,30 @@ defined('EXIT_USER_INPUT')     OR define('EXIT_USER_INPUT', 7); // invalid user 
 defined('EXIT_DATABASE')       OR define('EXIT_DATABASE', 8); // database error
 defined('EXIT__AUTO_MIN')      OR define('EXIT__AUTO_MIN', 9); // lowest automatically-assigned error code
 defined('EXIT__AUTO_MAX')      OR define('EXIT__AUTO_MAX', 125); // highest automatically-assigned error code
+
+/*
+|--------------------------------------------------------------------------
+| SRL Pixel LED - Business & Invoice Constants
+|--------------------------------------------------------------------------
+*/
+defined('COMPANY_NAME')         OR define('COMPANY_NAME', "SRL PIXEL LED'S GLOWING HUB");
+defined('COMPANY_TAGLINE')      OR define('COMPANY_TAGLINE', "India's Premier Addressable RGB & Pixel LED Specialists");
+defined('COMPANY_ADDRESS')      OR define('COMPANY_ADDRESS', "12, Electronica Hub, Nobal Nagar, Ahmedabad, Gujarat - 382340");
+defined('COMPANY_PHONE')        OR define('COMPANY_PHONE', "+91 90997 80463");
+defined('COMPANY_EMAIL')        OR define('COMPANY_EMAIL', "support@srlpixel.com");
+defined('COMPANY_WEBSITE')      OR define('COMPANY_WEBSITE', "www.srlpixel.com");
+defined('COMPANY_GSTIN')        OR define('COMPANY_GSTIN', "24AAACS7890F1Z5");
+
+/*
+|--------------------------------------------------------------------------
+| Razorpay Payment Gateway Constants
+| Replace these with your live / test Razorpay Dashboard API Keys
+|--------------------------------------------------------------------------
+*/
+defined('RAZORPAY_KEY_ID')          OR define('RAZORPAY_KEY_ID', 'rzp_live_SbkQIMaWChyIJ5');
+defined('RAZORPAY_KEY_SECRET')      OR define('RAZORPAY_KEY_SECRET', '3x0mD480NiBVcoAf6uES5GUV');
+defined('RAZORPAY_CURRENCY')        OR define('RAZORPAY_CURRENCY', 'INR');
+defined('RAZORPAY_COMPANY_NAME')    OR define('RAZORPAY_COMPANY_NAME', 'VISION TECHNOLABS');
+defined('RAZORPAY_THEME_COLOR')     OR define('RAZORPAY_THEME_COLOR', '#2563eb');
+
+
