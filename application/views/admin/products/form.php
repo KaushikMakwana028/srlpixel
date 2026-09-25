@@ -30,37 +30,21 @@
           </div>
         </div>
 
-        <div class="row g-3 mb-3">
-          <div class="col-md-6">
-            <label for="prodCategory" class="form-label fw-semibold text-secondary small">Category <span class="text-danger">*</span></label>
-            <select name="category_id" id="prodCategory" class="form-select bg-light text-dark py-2" required>
-              <option value="">Select Category</option>
-              <?php if (!empty($categories)): ?>
-                <?php foreach ($categories as $cat): ?>
-                  <option value="<?= $cat->id ?>" <?= ($product && $product->category_id == $cat->id) ? 'selected' : '' ?>>
-                    <?= html_escape($cat->name) ?>
-                  </option>
-                <?php endforeach; ?>
-              <?php endif; ?>
-            </select>
-          </div>
-          <div class="col-md-6">
-            <label for="prodSku" class="form-label fw-semibold text-secondary small">SKU / Item Code</label>
-            <div class="auth-input-group mb-0">
-              <i class="bi bi-upc-scan input-icon"></i>
-              <input type="text" name="sku" id="prodSku" class="form-control bg-light text-dark" placeholder="SRL-WS2812-60" value="<?= set_value('sku', $product ? $product->sku : '') ?>">
-            </div>
-          </div>
+        <div class="mb-3">
+          <label for="prodCategory" class="form-label fw-semibold text-secondary small">Category <span class="text-danger">*</span></label>
+          <select name="category_id" id="prodCategory" class="form-select bg-light text-dark py-2" required>
+            <option value="">Select Category</option>
+            <?php if (!empty($categories)): ?>
+              <?php foreach ($categories as $cat): ?>
+                <option value="<?= $cat->id ?>" <?= ($product && $product->category_id == $cat->id) ? 'selected' : '' ?>>
+                  <?= html_escape($cat->name) ?>
+                </option>
+              <?php endforeach; ?>
+            <?php endif; ?>
+          </select>
         </div>
 
-        <div class="mb-0">
-          <label for="prodSlug" class="form-label fw-semibold text-secondary small">URL Slug</label>
-          <div class="auth-input-group mb-0">
-            <i class="bi bi-link-45deg input-icon"></i>
-            <input type="text" name="slug" id="prodSlug" class="form-control bg-light text-dark" placeholder="ws2812b-5v-rgb-strip-60m" value="<?= set_value('slug', $product ? $product->slug : '') ?>">
-          </div>
-          <div class="form-text small text-muted mt-1">Direct product link: <code>/product/<span id="prodSlugPreview"><?= $product ? html_escape($product->slug) : 'product-slug' ?></span></code></div>
-        </div>
+
       </div>
     </div>
 
@@ -268,29 +252,7 @@
 document.addEventListener('DOMContentLoaded', function () {
   const maxBytes = 2 * 1024 * 1024; // 2 MB limit
 
-  // Auto slugify product name
-  const nameInput = document.getElementById('prodName');
-  const slugInput = document.getElementById('prodSlug');
-  const slugPreview = document.getElementById('prodSlugPreview');
 
-  if (nameInput && slugInput) {
-    nameInput.addEventListener('input', function () {
-      if (<?= $is_edit ? 'false' : 'true' ?> || !slugInput.value) {
-        const slugVal = this.value
-          .toLowerCase()
-          .trim()
-          .replace(/[^\w\s-]/g, '')
-          .replace(/[\s_-]+/g, '-')
-          .replace(/^-+|-+$/g, '');
-        slugInput.value = slugVal;
-        if (slugPreview) slugPreview.textContent = slugVal || 'product-slug';
-      }
-    });
-
-    slugInput.addEventListener('input', function () {
-      if (slugPreview) slugPreview.textContent = this.value || 'product-slug';
-    });
-  }
 
   // Real-time Discount & Savings Badge Calculation
   const priceInput = document.getElementById('prodPrice');

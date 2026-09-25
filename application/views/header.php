@@ -83,8 +83,7 @@
           <span class="nav-cart-badge cart-badge-count cart-badge-dot" id="headerCartBadge" style="<?= ($header_cart_count > 0) ? 'display:flex !important;' : 'display:none !important;' ?>"><?= $header_cart_count ?></span>
         </a>
 
-        <!-- Profile Avatar / Dropdown Button (COMMENTED OUT AS REQUESTED - DO NOT REMOVE) -->
-        <?php /*
+        <!-- Profile Avatar / Dropdown Button -->
         <div class="dropdown">
           <?php if ($is_logged_in): ?>
             <!-- Logged In User Avatar with Initial, First Name & Chevron -->
@@ -128,7 +127,6 @@
             </ul>
           <?php endif; ?>
         </div>
-        */ ?>
         <?php if (!$is_logged_in): ?>
           <!-- Direct Login Button for Guest User -->
           <a href="<?= base_url('login') ?>" class="btn-srl-primary rounded-pill px-3 py-1 fw-bold d-inline-flex align-items-center gap-1 text-decoration-none" style="font-size: 0.85rem;" title="Sign In">

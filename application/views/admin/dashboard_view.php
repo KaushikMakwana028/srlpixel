@@ -382,6 +382,9 @@
     <a href="<?= base_url('admin/offline_orders') ?>" class="btn-srl-outline">
       <i class="bi bi-shop"></i> Offline Orders
     </a>
+    <a href="<?= base_url('admin/coupons') ?>" class="btn-srl-outline">
+      <i class="bi bi-ticket-perforated"></i> Coupons
+    </a>
   </div>
 </div>
 
@@ -515,6 +518,36 @@
         <?php endif; ?>
         <a href="<?= base_url('admin/products?stock_status=out_of_stock') ?>" class="text-decoration-none fw-semibold" style="color: #ea580c;">Stock &rarr;</a>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Coupons & Promotional Pulse Bar -->
+<div class="card border-0 shadow-sm rounded-4 mb-3 p-3" style="border: 1px solid var(--srl-border) !important; background: linear-gradient(135deg, #ffffff 0%, #fff7fb 100%);">
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div class="d-flex align-items-center gap-3">
+      <div class="rounded-3 d-flex align-items-center justify-content-center text-white" style="width: 40px; height: 40px; background: var(--srl-pink-gradient); box-shadow: 0 4px 12px rgba(255, 42, 133, 0.3);">
+        <i class="bi bi-ticket-perforated-fill fs-5"></i>
+      </div>
+      <div>
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+          <h6 class="fw-bold text-dark mb-0" style="font-size: 0.92rem;">Coupons & Promotional Pulse</h6>
+          <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-0.5" style="font-size: 0.68rem;">
+            <?= $active_coupons_count ?? 0 ?> Active Codes
+          </span>
+        </div>
+        <p class="text-muted small mb-0" style="font-size: 0.76rem;">
+          Customers have saved <strong class="text-dark">₹<?= number_format($total_coupon_savings ?? 0, 2) ?></strong> across <strong class="text-dark"><?= number_format($total_coupon_uses ?? 0) ?></strong> redemptions.
+        </p>
+      </div>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <a href="<?= base_url('admin/coupons/add') ?>" class="btn btn-sm btn-srl-primary rounded-pill px-3 py-1 fw-semibold shadow-xs" style="font-size: 0.76rem;">
+        <i class="bi bi-plus-lg me-1"></i>New Coupon
+      </a>
+      <a href="<?= base_url('admin/coupons') ?>" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1 fw-semibold" style="font-size: 0.76rem;">
+        View Coupons &rarr;
+      </a>
     </div>
   </div>
 </div>

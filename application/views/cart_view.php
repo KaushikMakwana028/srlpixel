@@ -100,8 +100,8 @@
 </div>
 <?php else: ?>
 <?php 
-$remaining = 20000 - $subtotal;
-$progress = ($subtotal / 20000) * 100;
+$remaining = 10000 - $subtotal;
+$progress = ($subtotal / 10000) * 100;
 ?>
 <div class="d-flex align-items-center justify-content-between p-2 p-sm-3 mb-4 rounded-3 border flex-wrap gap-2" style="background: linear-gradient(135deg, #fef3c7 0%, #fef9e7 100%);">
     <div class="d-flex align-items-center gap-2">
@@ -296,48 +296,108 @@ $progress = ($subtotal / 20000) * 100;
             <span class="fw-bold text-dark" id="cartSummarySubtotal">₹<?= number_format($subtotal, 2) ?></span>
           </div>
 
+          <!-- Coupon Discount (Visible when coupon is applied) -->
+          <div class="d-flex justify-content-between align-items-center mb-2 text-success" id="cartDiscountRow" style="<?= (!empty($applied_coupon) && $coupon_discount > 0) ? '' : 'display: none !important;' ?>">
+            <span class="d-flex align-items-center gap-1.5 fw-semibold">
+              <i class="bi bi-tag-fill"></i> Coupon (<span id="cartDiscountCode"><?= !empty($applied_coupon) ? html_escape($applied_coupon['code']) : '' ?></span>)
+            </span>
+            <span class="fw-bold" id="cartSummaryDiscount">-₹<?= number_format($coupon_discount, 2) ?></span>
+          </div>
+
           <!-- Delivery Charge -->
-        <!-- Delivery Charge -->
-<div class="d-flex justify-content-between align-items-center mb-2">
-    <span class="text-muted">Delivery Charges</span>
-    <span id="cartSummaryShipping">
-        <?php if ($is_free_shipping): ?>
-            <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">FREE</span>
-        <?php else: ?>
-            <span class="fw-bold text-dark">₹<?= number_format($shipping, 2) ?></span>
-        <?php endif; ?>
-    </span>
-</div>
-<?php if (!$is_free_shipping): ?>
-<!-- Free Shipping Progress Bar -->
-<div class="mb-3 p-2 rounded-3 bg-light border">
-    <?php 
-    $remaining = 20000 - $subtotal;
-    $progress = min(100, ($subtotal / 20000) * 100);
-    ?>
-    <small class="text-muted d-block mb-1">
-        <i class="bi bi-info-circle me-1"></i>Add ₹<?= number_format($remaining, 2) ?> more for FREE shipping!
-    </small>
-    <div class="progress" style="height: 6px;">
-        <div class="progress-bar bg-success" role="progressbar" style="width: <?= $progress ?>%"></div>
-    </div>
-</div>
-<?php endif; ?>
-
-          <!-- Taxes -->
-          <!-- <div class="d-flex justify-content-between align-items-center mb-3">
-            <span class="text-muted">Estimated GST</span>
-            <span class="text-muted small">Included in price</span>
-          </div> -->
-
-          <!-- Promo Code Input Group -->
-          <div class="mb-3">
-            <label class="form-label small fw-semibold text-secondary mb-1">Promo / Coupon Code</label>
-            <div class="input-group input-group-sm">
-              <input type="text" class="form-control rounded-start-3" id="cartCouponInput" placeholder="Enter coupon code (e.g. SRLPIXEL)">
-              <button class="btn btn-outline-dark rounded-end-3 px-3" type="button" id="btnApplyCoupon">Apply</button>
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="text-muted">Delivery Charges</span>
+            <span id="cartSummaryShipping">
+              <?php if ($is_free_shipping): ?>
+                <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">FREE</span>
+              <?php else: ?>
+                <span class="fw-bold text-dark">₹<?= number_format($shipping, 2) ?></span>
+              <?php endif; ?>
+            </span>
+          </div>
+          <?php if (!$is_free_shipping): ?>
+          <!-- Free Shipping Progress Bar -->
+          <div class="mb-3 p-2 rounded-3 bg-light border" id="shippingProgressBarContainer">
+            <?php 
+            $remaining = 10000 - $subtotal;
+            $progress = min(100, ($subtotal / 10000) * 100);
+            ?>
+            <small class="text-muted d-block mb-1" id="shippingProgressText">
+              <i class="bi bi-info-circle me-1"></i>Add ₹<?= number_format(max(0, $remaining), 2) ?> more for FREE shipping!
+            </small>
+            <div class="progress" style="height: 6px;">
+              <div class="progress-bar bg-success" id="shippingProgressBar" role="progressbar" style="width: <?= $progress ?>%"></div>
             </div>
-            <div id="couponFeedback" class="small mt-1" style="display: none;"></div>
+          </div>
+          <?php endif; ?>
+
+          <!-- Enhanced Promo / Coupon Code Section -->
+          <div class="srl-coupon-box p-3 rounded-4 mb-3 border shadow-sm" style="background: linear-gradient(135deg, rgba(255, 42, 133, 0.05) 0%, rgba(18, 22, 33, 0.02) 100%); border-color: rgba(255, 42, 133, 0.22) !important;">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <span class="small fw-bold text-dark d-flex align-items-center gap-2" style="letter-spacing: -0.1px;">
+                <span class="d-inline-flex align-items-center justify-content-center rounded-circle" style="width: 24px; height: 24px; background: rgba(255, 42, 133, 0.14); color: var(--srl-pink);">
+                  <i class="bi bi-ticket-perforated-fill" style="font-size: 0.82rem;"></i>
+                </span>
+                <span>Promo / Coupon Code</span>
+              </span>
+              <span class="badge rounded-pill text-uppercase px-2 py-1" style="background: rgba(255, 42, 133, 0.12); color: var(--srl-pink); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.5px;">Offers</span>
+            </div>
+            
+            <!-- Applied Coupon State Banner -->
+            <div id="appliedCouponBox" class="p-2.5 rounded-3 mb-2" style="background: #ecfdf5; border: 1px solid #a7f3d0; <?= !empty($applied_coupon) ? '' : 'display: none;' ?>">
+              <div class="d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-2">
+                  <span class="d-inline-flex align-items-center justify-content-center rounded-circle text-success" style="width: 28px; height: 28px; background: #d1fae5;">
+                    <i class="bi bi-check-lg fw-bold"></i>
+                  </span>
+                  <div>
+                    <span class="fw-bold text-success d-block" style="font-size: 0.85rem;" id="appliedCouponCodeDisplay"><?= !empty($applied_coupon) ? html_escape($applied_coupon['code']) : '' ?></span>
+                    <small class="text-muted" style="font-size: 0.72rem;" id="appliedCouponSavings">Discount applied: ₹<?= number_format($coupon_discount, 2) ?></small>
+                  </div>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-danger py-1 px-2.5 rounded-pill" id="btnRemoveCoupon" style="font-size: 0.75rem;">
+                  <i class="bi bi-x-circle me-1"></i>Remove
+                </button>
+              </div>
+            </div>
+
+            <!-- Coupon Input Group -->
+            <div id="couponInputContainer" style="<?= !empty($applied_coupon) ? 'display: none;' : '' ?>">
+              <div class="input-group input-group-sm srl-coupon-input-group position-relative shadow-sm rounded-pill overflow-hidden border p-1" style="background: #ffffff; border-color: #e2e8f0 !important;">
+                <span class="input-group-text bg-transparent border-0 ps-3 pe-1 text-muted">
+                  <i class="bi bi-tag-fill" style="color: var(--srl-pink); font-size: 0.85rem;"></i>
+                </span>
+                <input type="text" class="form-control border-0 bg-transparent py-2 text-uppercase fw-semibold" id="cartCouponInput" placeholder="ENTER COUPON CODE" style="letter-spacing: 0.5px; font-size: 0.82rem; box-shadow: none;">
+                <button class="btn btn-srl-primary rounded-pill px-3 py-1 fw-bold text-uppercase" type="button" id="btnApplyCoupon" style="font-size: 0.78rem; letter-spacing: 0.4px;">
+                  Apply
+                </button>
+              </div>
+              
+              <!-- Quick Suggestion Badges -->
+              <?php if (!empty($available_coupons)): ?>
+                <div class="d-flex align-items-center gap-1.5 mt-2 flex-wrap">
+                  <small class="text-muted" style="font-size: 0.72rem;">Available:</small>
+                  <?php foreach ($available_coupons as $ac): ?>
+                    <button type="button" class="btn btn-sm py-0 px-2 rounded-pill border-0 srl-quick-coupon-btn" data-code="<?= html_escape($ac->code) ?>" style="background: rgba(255, 42, 133, 0.1); color: var(--srl-pink); font-size: 0.72rem; font-weight: 700;">
+                      <i class="bi bi-tag me-1"></i><?= html_escape($ac->code) ?>
+                      <span class="text-muted fw-normal" style="font-size: 0.65rem;">(<?= $ac->discount_type === 'percent' ? $ac->discount_value.'%' : '₹'.number_format($ac->discount_value, 0) ?> OFF)</span>
+                    </button>
+                  <?php endforeach; ?>
+                </div>
+              <?php else: ?>
+                <div class="d-flex align-items-center gap-1.5 mt-2 flex-wrap">
+                  <small class="text-muted" style="font-size: 0.72rem;">Available:</small>
+                  <button type="button" class="btn btn-sm py-0 px-2 rounded-pill border-0 srl-quick-coupon-btn" data-code="WELCOME10" style="background: rgba(16, 185, 129, 0.12); color: #059669; font-size: 0.72rem; font-weight: 700;">
+                    <i class="bi bi-percent me-1"></i>WELCOME10
+                  </button>
+                  <button type="button" class="btn btn-sm py-0 px-2 rounded-pill border-0 srl-quick-coupon-btn" data-code="FLAT500" style="background: rgba(255, 42, 133, 0.1); color: var(--srl-pink); font-size: 0.72rem; font-weight: 700;">
+                    <i class="bi bi-stars me-1"></i>FLAT500
+                  </button>
+                </div>
+              <?php endif; ?>
+            </div>
+            
+            <div id="couponFeedback" class="small mt-2" style="display: none;"></div>
           </div>
 
           <hr class="my-3" style="opacity: 0.1;">
@@ -369,7 +429,7 @@ $progress = ($subtotal / 20000) * 100;
           <div class="rounded-3 p-3 bg-light text-muted small border">
            <div class="d-flex align-items-center gap-2 mb-2">
     <i class="bi bi-truck text-danger fs-5" style="color: var(--srl-pink) !important;"></i>
-    <span class="text-dark"><strong>Pan India Delivery</strong> (Free above ₹20,000)</span>
+    <span class="text-dark"><strong>Pan India Delivery</strong> (Free above ₹10,000)</span>
 </div>
 <div class="d-flex align-items-center gap-2 mb-2">
     <i class="bi bi-globe text-info fs-5"></i>
@@ -469,14 +529,56 @@ document.addEventListener('DOMContentLoaded', function () {
 
           if (subtotal) subtotal.innerText = '₹' + data.subtotal;
           if (total) total.innerText = '₹' + data.total;
-const shippingElement = document.getElementById('cartSummaryShipping');
-if (shippingElement) {
-    if (data.is_free_shipping) {
-        shippingElement.innerHTML = '<span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">FREE</span>';
-    } else {
-        shippingElement.innerHTML = '<span class="fw-bold text-dark">₹' + data.shipping + '</span>';
-    }
-}
+
+          const shippingElement = document.getElementById('cartSummaryShipping');
+          if (shippingElement) {
+            if (data.is_free_shipping) {
+              shippingElement.innerHTML = '<span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">FREE</span>';
+            } else {
+              shippingElement.innerHTML = '<span class="fw-bold text-dark">₹' + data.shipping + '</span>';
+            }
+          }
+
+          // Dynamic Shipping Progress Bar
+          const numSubtotal = parseFloat(data.subtotal.replace(/,/g, '')) || 0;
+          const progContainer = document.getElementById('shippingProgressBarContainer');
+          const progText = document.getElementById('shippingProgressText');
+          const progBar = document.getElementById('shippingProgressBar');
+          if (progContainer) {
+            if (data.is_free_shipping) {
+              progContainer.style.display = 'none';
+            } else {
+              progContainer.style.display = 'block';
+              const remaining = Math.max(0, 10000 - numSubtotal);
+              const pct = Math.min(100, (numSubtotal / 10000) * 100);
+              if (progText) progText.innerHTML = '<i class="bi bi-info-circle me-1"></i>Add ₹' + remaining.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' more for FREE shipping!';
+              if (progBar) progBar.style.width = pct + '%';
+            }
+          }
+
+          // Dynamic Coupon Discount Update on Quantity Change
+          const discountRow = document.getElementById('cartDiscountRow');
+          const summaryDiscount = document.getElementById('cartSummaryDiscount');
+          const appliedCouponBox = document.getElementById('appliedCouponBox');
+          const couponInputContainer = document.getElementById('couponInputContainer');
+          const appliedCouponCodeDisplay = document.getElementById('appliedCouponCodeDisplay');
+          const appliedCouponSavings = document.getElementById('appliedCouponSavings');
+          const cartDiscountCode = document.getElementById('cartDiscountCode');
+
+          if (data.has_coupon && parseFloat(data.coupon_discount) > 0) {
+            if (discountRow) discountRow.style.setProperty('display', 'flex', 'important');
+            if (summaryDiscount) summaryDiscount.innerText = '-₹' + data.coupon_discount;
+            if (cartDiscountCode) cartDiscountCode.innerText = data.coupon_code;
+            if (appliedCouponBox) appliedCouponBox.style.display = 'block';
+            if (couponInputContainer) couponInputContainer.style.display = 'none';
+            if (appliedCouponCodeDisplay) appliedCouponCodeDisplay.innerText = data.coupon_code;
+            if (appliedCouponSavings) appliedCouponSavings.innerText = 'Discount applied: ₹' + data.coupon_discount;
+          } else {
+            if (discountRow) discountRow.style.setProperty('display', 'none', 'important');
+            if (appliedCouponBox) appliedCouponBox.style.display = 'none';
+            if (couponInputContainer) couponInputContainer.style.display = 'block';
+          }
+
           updateHeaderBadge(data.cart_count);
         } else if (data.require_login) {
           window.location.href = data.login_url;
@@ -610,28 +712,172 @@ if (shippingElement) {
     });
   });
 
-  // Coupon code simulation
+  // Real-time Coupon Code AJAX Engine
   const btnApplyCoupon = document.getElementById('btnApplyCoupon');
   const couponInput = document.getElementById('cartCouponInput');
   const couponFeedback = document.getElementById('couponFeedback');
-  if (btnApplyCoupon && couponInput && couponFeedback) {
+  const appliedCouponBox = document.getElementById('appliedCouponBox');
+  const couponInputContainer = document.getElementById('couponInputContainer');
+  const btnRemoveCoupon = document.getElementById('btnRemoveCoupon');
+  const discountRow = document.getElementById('cartDiscountRow');
+  const summaryDiscount = document.getElementById('cartSummaryDiscount');
+  const cartSummaryTotal = document.getElementById('cartSummaryTotal');
+  const cartDiscountCode = document.getElementById('cartDiscountCode');
+  const appliedCouponCodeDisplay = document.getElementById('appliedCouponCodeDisplay');
+  const appliedCouponSavings = document.getElementById('appliedCouponSavings');
+
+  // Quick suggestion click
+  document.querySelectorAll('.srl-quick-coupon-btn').forEach(btn => {
+    btn.addEventListener('click', function () {
+      const code = this.getAttribute('data-code');
+      if (couponInput) {
+        couponInput.value = code;
+        if (btnApplyCoupon) btnApplyCoupon.click();
+      }
+    });
+  });
+
+  // Apply Coupon AJAX
+  if (btnApplyCoupon && couponInput) {
     btnApplyCoupon.addEventListener('click', function () {
       const code = couponInput.value.trim().toUpperCase();
       if (!code) {
-        couponFeedback.style.display = 'block';
-        couponFeedback.className = 'small mt-1 text-danger';
-        couponFeedback.innerText = 'Please enter a valid coupon code.';
+        if (couponFeedback) {
+          couponFeedback.style.display = 'block';
+          couponFeedback.className = 'small mt-2 text-danger fw-semibold';
+          couponFeedback.innerText = 'Please enter a coupon code.';
+        }
         return;
       }
-      if (code === 'SRLPIXEL' || code === 'WELCOME10') {
-        couponFeedback.style.display = 'block';
-        couponFeedback.className = 'small mt-1 text-success fw-semibold';
-        couponFeedback.innerHTML = '<i class="bi bi-check-circle me-1"></i>Coupon code "' + code + '" applied! Free delivery & priority packing active.';
-      } else {
-        couponFeedback.style.display = 'block';
-        couponFeedback.className = 'small mt-1 text-danger';
-        couponFeedback.innerText = 'Invalid coupon code or expired.';
+
+      btnApplyCoupon.disabled = true;
+      btnApplyCoupon.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Applying...';
+
+      const formData = new FormData();
+      formData.append('coupon_code', code);
+
+      fetch('<?= base_url('cart/apply_coupon') ?>', {
+        method: 'POST',
+        body: formData,
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+      })
+      .then(res => res.json())
+      .then(data => {
+        btnApplyCoupon.disabled = false;
+        btnApplyCoupon.innerHTML = 'Apply';
+
+        if (data.success) {
+          if (couponFeedback) {
+            couponFeedback.style.display = 'none';
+          }
+          if (appliedCouponBox) {
+            appliedCouponBox.style.display = 'block';
+          }
+          if (couponInputContainer) {
+            couponInputContainer.style.display = 'none';
+          }
+          if (appliedCouponCodeDisplay) {
+            appliedCouponCodeDisplay.innerText = data.coupon_code;
+          }
+          if (appliedCouponSavings) {
+            appliedCouponSavings.innerText = 'Discount applied: ₹' + data.discount_amount;
+          }
+          if (discountRow) {
+            discountRow.style.setProperty('display', 'flex', 'important');
+          }
+          if (summaryDiscount) {
+            summaryDiscount.innerText = '-₹' + data.discount_amount;
+          }
+          if (cartDiscountCode) {
+            cartDiscountCode.innerText = data.coupon_code;
+          }
+          if (cartSummaryTotal) {
+            cartSummaryTotal.innerText = '₹' + data.total;
+          }
+
+          Swal.fire({
+            title: 'Coupon Applied!',
+            text: data.message,
+            icon: 'success',
+            timer: 2500,
+            showConfirmButton: false,
+            customClass: { popup: 'srl-swal-popup' }
+          });
+        } else {
+          if (couponFeedback) {
+            couponFeedback.style.display = 'block';
+            couponFeedback.className = 'small mt-2 text-danger fw-semibold';
+            couponFeedback.innerText = data.message || 'Invalid coupon code or expired.';
+          }
+        }
+      })
+      .catch(err => {
+        btnApplyCoupon.disabled = false;
+        btnApplyCoupon.innerHTML = 'Apply';
+        console.error('Coupon apply error:', err);
+        if (couponFeedback) {
+          couponFeedback.style.display = 'block';
+          couponFeedback.className = 'small mt-2 text-danger';
+          couponFeedback.innerText = 'Error applying coupon. Please try again.';
+        }
+      });
+    });
+
+    couponInput.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        btnApplyCoupon.click();
       }
+    });
+  }
+
+  // Remove Coupon AJAX
+  if (btnRemoveCoupon) {
+    btnRemoveCoupon.addEventListener('click', function () {
+      btnRemoveCoupon.disabled = true;
+      btnRemoveCoupon.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Removing...';
+
+      fetch('<?= base_url('cart/remove_coupon') ?>', {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+      })
+      .then(res => res.json())
+      .then(data => {
+        btnRemoveCoupon.disabled = false;
+        btnRemoveCoupon.innerHTML = '<i class="bi bi-x-circle me-1"></i>Remove';
+
+        if (data.success) {
+          if (appliedCouponBox) {
+            appliedCouponBox.style.display = 'none';
+          }
+          if (couponInputContainer) {
+            couponInputContainer.style.display = 'block';
+          }
+          if (couponInput) {
+            couponInput.value = '';
+          }
+          if (discountRow) {
+            discountRow.style.setProperty('display', 'none', 'important');
+          }
+          if (cartSummaryTotal) {
+            cartSummaryTotal.innerText = '₹' + data.total;
+          }
+
+          Swal.fire({
+            title: 'Coupon Removed',
+            text: 'Coupon has been removed from your cart.',
+            icon: 'info',
+            timer: 2000,
+            showConfirmButton: false,
+            customClass: { popup: 'srl-swal-popup' }
+          });
+        }
+      })
+      .catch(err => {
+        btnRemoveCoupon.disabled = false;
+        btnRemoveCoupon.innerHTML = '<i class="bi bi-x-circle me-1"></i>Remove';
+        console.error('Coupon remove error:', err);
+      });
     });
   }
 });

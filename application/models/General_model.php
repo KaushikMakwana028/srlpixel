@@ -253,6 +253,34 @@ class General_model extends CI_Model
             ->get('categories')
             ->result();
     }
+
+    /**
+     * Automatically format and sync customer's default address into user.address field
+     */
+    public function sync_user_default_address($user_id)
+    {
+        $user_id = (int)$user_id;
+        if ($user_id <= 0) return;
+
+        // Fetch default address or first address
+        $address = $this->getOne('user_addresses', ['user_id' => $user_id, 'is_default' => 1]);
+        if (!$address) {
+            $address = $this->getOne('user_addresses', ['user_id' => $user_id]);
+        }
+
+        if ($address) {
+            $parts = array_filter([
+                trim($address->address_line1 ?? ''),
+                trim($address->address_line2 ?? ''),
+                trim($address->landmark ?? ''),
+                trim($address->city ?? ''),
+                trim($address->state ?? ''),
+                trim($address->pincode ?? '')
+            ]);
+            $formatted = implode(', ', $parts);
+            $this->update('user', ['id' => $user_id], ['address' => $formatted]);
+        }
+    }
 }
 
 

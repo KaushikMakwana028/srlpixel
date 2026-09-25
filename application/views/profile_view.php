@@ -446,6 +446,11 @@
   outline: none;
 }
 
+.input-group:focus-within .input-group-text {
+  border-color: var(--srl-pink) !important;
+  color: var(--srl-pink) !important;
+}
+
 .cust-form-input:disabled,
 .cust-dark-input:disabled,
 .cust-form-input[readonly],
@@ -583,10 +588,13 @@
              ============================================================ -->
         <div class="tab-pane fade <?= (!isset($active_tab) || $active_tab === 'profile') ? 'show active' : '' ?>" id="tab-profile" role="tabpanel">
           <div class="cust-dash-content-card">
+            <!-- Header Section -->
             <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
               <div>
-                <h4 class="fw-bold text-dark mb-1">Profile Information</h4>
-                <p class="text-muted small mb-0">Update your personal account details and security password.</p>
+                <h4 class="fw-bold text-dark mb-1 d-flex align-items-center gap-2">
+                  <i class="bi bi-person-badge-fill" style="color: var(--srl-pink);"></i>Profile Information
+                </h4>
+                <p class="text-muted small mb-0">Manage your personal account details and contact information.</p>
               </div>
             </div>
 
@@ -594,77 +602,100 @@
               <input type="hidden" name="action" value="update_profile">
               <input type="file" name="profile_image" id="custProfileImageInput" class="d-none" accept="image/jpeg,image/png,image/webp,image/gif">
 
-              <!-- Personal Information Fields (Email Enabled & Editable) -->
-              <div class="row g-3 mb-4">
-                <div class="col-md-6">
-                  <label class="cust-form-label">Full Name <span class="text-danger">*</span></label>
-                  <input type="text" name="name" class="form-control cust-form-input" value="<?= set_value('name', $user->name) ?>" placeholder="Enter your full name" required>
-                </div>
-
-                <div class="col-md-6">
-                  <label class="cust-form-label">Mobile Number</label>
-                  <input type="text" name="phone" class="form-control cust-form-input" placeholder="e.g. 9876543210" value="<?= set_value('phone', $user->phone) ?>">
-                </div>
-
-                <div class="col-12">
-                  <label class="cust-form-label">Email Address <span class="text-danger">*</span></label>
-                  <input type="email" name="email" class="form-control cust-form-input" value="<?= set_value('email', $user->email) ?>" placeholder="Enter your email address" required>
-                  <span class="text-muted" style="font-size: 0.75rem;">
-                    <i class="bi bi-info-circle me-1"></i>Used for order notifications, receipts, and invoices.
-                  </span>
-                </div>
-              </div>
-
-              <!-- Integrated Account Password Sub-section (Inside same card) -->
-              <div class="pt-4 border-top mb-4">
-                <div class="d-flex align-items-center gap-2 mb-2">
-                  <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: rgba(225, 29, 116, 0.1); color: var(--srl-pink);">
-                    <i class="bi bi-shield-lock-fill"></i>
+              <!-- Section 1: Personal Contact Details -->
+              <div class="mb-4">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                  <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 28px; height: 28px; background: rgba(225, 29, 116, 0.1); color: var(--srl-pink); font-size: 0.85rem;">
+                    <i class="bi bi-person-fill"></i>
                   </div>
-                  <h5 class="fw-bold text-dark mb-0">Change Account Password</h5>
+                  <h6 class="fw-bold text-dark mb-0">Personal Contact Details</h6>
                 </div>
-                <p class="text-muted small mb-3">Leave blank if you do not want to change your current password.</p>
 
                 <div class="row g-3">
-                  <div class="col-md-4">
-                    <label class="cust-form-label">Current Password</label>
-                    <div class="position-relative">
-                      <input type="password" name="current_password" id="current_password" class="form-control cust-form-input pe-5" placeholder="Current password">
-                      <button type="button" class="position-absolute top-50 end-0 translate-middle-y password-toggle-btn" onclick="togglePasswordVisibility('current_password', this)">
-                        <i class="bi bi-eye"></i>
-                      </button>
+                  <div class="col-md-6">
+                    <label class="cust-form-label">Full Name <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                      <span class="input-group-text bg-white border-end-0 text-muted" style="border-radius: 12px 0 0 12px; border: 1.5px solid #cbd5e1; border-right: none;"><i class="bi bi-person"></i></span>
+                      <input type="text" name="name" class="form-control cust-form-input border-start-0" style="border-radius: 0 12px 12px 0;" value="<?= set_value('name', $user->name) ?>" placeholder="Enter your full name" required>
                     </div>
                   </div>
 
-                  <div class="col-md-4">
-                    <label class="cust-form-label">New Password</label>
-                    <div class="position-relative">
-                      <input type="password" name="new_password" id="new_password" class="form-control cust-form-input pe-5" placeholder="Min. 6 characters" minlength="6">
-                      <button type="button" class="position-absolute top-50 end-0 translate-middle-y password-toggle-btn" onclick="togglePasswordVisibility('new_password', this)">
-                        <i class="bi bi-eye"></i>
-                      </button>
+                  <div class="col-md-6">
+                    <label class="cust-form-label d-flex align-items-center justify-content-between">
+                      <span>Mobile Number</span>
+                      <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-0.5" style="font-size: 0.68rem;"><i class="bi bi-shield-check me-1"></i>OTP Login</span>
+                    </label>
+                    <div class="input-group">
+                      <span class="input-group-text bg-white border-end-0 text-muted" style="border-radius: 12px 0 0 12px; border: 1.5px solid #cbd5e1; border-right: none;"><i class="bi bi-phone"></i></span>
+                      <input type="text" name="phone" class="form-control cust-form-input border-start-0" style="border-radius: 0 12px 12px 0;" placeholder="e.g. 9876543210" value="<?= set_value('phone', $user->phone) ?>">
                     </div>
                   </div>
 
-                  <div class="col-md-4">
-                    <label class="cust-form-label">Confirm New Password</label>
-                    <div class="position-relative">
-                      <input type="password" name="confirm_password" id="confirm_password" class="form-control cust-form-input pe-5" placeholder="Re-enter password" minlength="6">
-                      <button type="button" class="position-absolute top-50 end-0 translate-middle-y password-toggle-btn" onclick="togglePasswordVisibility('confirm_password', this)">
-                        <i class="bi bi-eye"></i>
-                      </button>
+                  <div class="col-12">
+                    <label class="cust-form-label">Email Address <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                      <span class="input-group-text bg-white border-end-0 text-muted" style="border-radius: 12px 0 0 12px; border: 1.5px solid #cbd5e1; border-right: none;"><i class="bi bi-envelope"></i></span>
+                      <input type="email" name="email" class="form-control cust-form-input border-start-0" style="border-radius: 0 12px 12px 0;" value="<?= set_value('email', $user->email) ?>" placeholder="Enter your email address" required>
                     </div>
+                    <span class="text-muted d-block mt-1" style="font-size: 0.76rem;">
+                      <i class="bi bi-info-circle me-1"></i>Order confirmations, receipts, and digital invoices will be delivered to this email.
+                    </span>
                   </div>
                 </div>
               </div>
 
-              <!-- Unified Submit Bar -->
+              <!-- Section 2: Default Delivery Address Preview -->
+              <?php 
+                $default_addr = null;
+                if (!empty($addresses)) {
+                  foreach ($addresses as $a) {
+                    if ($a->is_default == 1) {
+                      $default_addr = $a;
+                      break;
+                    }
+                  }
+                  if (!$default_addr && !empty($addresses[0])) {
+                    $default_addr = $addresses[0];
+                  }
+                }
+              ?>
+              <div class="p-3 p-md-3 rounded-4 mb-4 border" style="background: #ffffff; border-color: #e2e8f0 !important;">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 28px; height: 28px; background: rgba(225, 29, 116, 0.1); color: var(--srl-pink); font-size: 0.85rem;">
+                      <i class="bi bi-geo-alt-fill"></i>
+                    </div>
+                    <h6 class="fw-bold text-dark mb-0">Default Delivery Address</h6>
+                  </div>
+                  <button type="button" class="btn btn-sm btn-link text-decoration-none p-0 fw-semibold" style="color: var(--srl-pink); font-size: 0.82rem;" onclick="document.getElementById('tab-addresses-btn').click();">
+                    Manage Addresses <i class="bi bi-arrow-right"></i>
+                  </button>
+                </div>
+
+                <?php if ($default_addr): ?>
+                  <div class="d-flex align-items-start gap-2 small text-secondary ps-4">
+                    <span class="fw-semibold text-dark"><?= html_escape($default_addr->full_name) ?></span> &bull; 
+                    <span><?= html_escape($default_addr->address_line1) ?><?= !empty($default_addr->address_line2) ? ', ' . html_escape($default_addr->address_line2) : '' ?>, <?= html_escape($default_addr->city) ?> (<?= html_escape($default_addr->pincode) ?>)</span>
+                  </div>
+                <?php elseif (!empty($user->address)): ?>
+                  <div class="small text-secondary ps-4">
+                    <i class="bi bi-geo-alt me-1 text-danger"></i><?= html_escape($user->address) ?>
+                  </div>
+                <?php else: ?>
+                  <div class="small text-muted ps-4">
+                    <i class="bi bi-info-circle me-1"></i>No delivery address saved yet. <a href="javascript:void(0)" onclick="openAddAddressModal()" class="text-decoration-none fw-semibold" style="color: var(--srl-pink);">Add one now</a>.
+                  </div>
+                <?php endif; ?>
+              </div>
+
+              <!-- Submit Bar -->
               <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 pt-3 border-top">
-                <span class="text-muted small">
-                  <i class="bi bi-shield-check text-success me-1"></i>Your information is encrypted and secured.
-                </span>
-                <button type="submit" class="btn-srl-primary px-4 py-2 rounded-pill fw-bold">
-                  <i class="bi bi-check2-circle me-1"></i>Save Changes
+                <div class="d-flex align-items-center gap-2 text-muted small">
+                  <i class="bi bi-shield-lock-fill text-success fs-5"></i>
+                  <span>Your profile details are secured & encrypted</span>
+                </div>
+                <button type="submit" class="btn-srl-primary px-4 py-2.5 rounded-pill fw-bold shadow-sm d-inline-flex align-items-center gap-2">
+                  <i class="bi bi-check2-circle fs-6"></i>Save Profile Changes
                 </button>
               </div>
             <?= form_close() ?>
@@ -1045,25 +1076,27 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
       }
 
-      // Instant preview
+      // Instant preview in sidebar and profile info tab
       const reader = new FileReader();
       reader.onload = function (e) {
-        const initialSpan = document.getElementById('customerAvatarInitial');
-        if (initialSpan) initialSpan.style.display = 'none';
+        if (avatarContainer) {
+          const initialSpan = document.getElementById('customerAvatarInitial');
+          if (initialSpan) initialSpan.style.display = 'none';
 
-        let previewImg = document.getElementById('customerAvatarPreviewImg');
-        if (!previewImg) {
-          previewImg = document.createElement('img');
-          previewImg.id = 'customerAvatarPreviewImg';
-          previewImg.className = 'w-100 h-100 object-fit-cover rounded-circle';
-          previewImg.alt = 'Avatar Preview';
-          avatarContainer.appendChild(previewImg);
+          let previewImg = document.getElementById('customerAvatarPreviewImg');
+          if (!previewImg) {
+            previewImg = document.createElement('img');
+            previewImg.id = 'customerAvatarPreviewImg';
+            previewImg.className = 'w-100 h-100 object-fit-cover rounded-circle';
+            previewImg.alt = 'Avatar Preview';
+            avatarContainer.appendChild(previewImg);
+          }
+          previewImg.src = e.target.result;
+          previewImg.style.display = 'block';
+          previewImg.style.borderRadius = '50%';
+
+          avatarContainer.style.boxShadow = '0 0 25px rgba(235, 14, 153, 0.8)';
         }
-        previewImg.src = e.target.result;
-        previewImg.style.display = 'block';
-        previewImg.style.borderRadius = '50%';
-
-        avatarContainer.style.boxShadow = '0 0 25px rgba(235, 14, 153, 0.8)';
       };
       reader.readAsDataURL(file);
     });

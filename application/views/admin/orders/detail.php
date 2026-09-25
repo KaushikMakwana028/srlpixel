@@ -643,9 +643,19 @@
               <span>Subtotal</span>
               <strong><?= '₹' . number_format($order->subtotal, 2) ?></strong>
             </div>
+            <?php if (!empty($order->coupon_discount) && (float)$order->coupon_discount > 0): ?>
+              <div class="od-summary-row" style="color: #059669; font-weight: 600;">
+                <span><i class="bi bi-tag-fill me-1"></i>Coupon Discount (<?= html_escape($order->coupon_code) ?>)</span>
+                <strong>-<?= '₹' . number_format($order->coupon_discount, 2) ?></strong>
+              </div>
+            <?php endif; ?>
             <div class="od-summary-row">
               <span>Shipping Charges</span>
-              <span class="od-free">FREE</span>
+              <?php if (isset($order->shipping_fee) && (float)$order->shipping_fee > 0): ?>
+                <strong><?= '₹' . number_format($order->shipping_fee, 2) ?></strong>
+              <?php else: ?>
+                <span class="od-free">FREE</span>
+              <?php endif; ?>
             </div>
             <div class="od-summary-row total">
               <span>Grand Total</span>

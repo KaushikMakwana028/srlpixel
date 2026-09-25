@@ -103,16 +103,56 @@ class Checkout extends CI_Controller
         $data['cart_items'] = $cart_items;
         $data['subtotal'] = $subtotal;
 
-        // Calculate shipping based on order value
-        $shipping_fee = 0.00;
-        if ($subtotal < 20000) {
-            $shipping_fee = 200.00; // Or your desired shipping charge
+        // Verify and calculate applied coupon if present in session
+        $coupon_discount = 0.00;
+        $applied_coupon = $this->session->userdata('applied_coupon');
+        if (!empty($applied_coupon)) {
+            $coupon = $this->General_model->getOne('coupons', ['id' => $applied_coupon['id'], 'status' => 1]);
+            $is_valid = true;
+            $now = date('Y-m-d H:i:s');
+
+            if (!$coupon) {
+                $is_valid = false;
+            } elseif (!empty($coupon->start_date) && $coupon->start_date > $now) {
+                $is_valid = false;
+            } elseif (!empty($coupon->end_date) && $coupon->end_date < $now) {
+                $is_valid = false;
+            } elseif ($coupon->usage_limit > 0 && $coupon->used_count >= $coupon->usage_limit) {
+                $is_valid = false;
+            } elseif ($coupon->min_order_amount > 0 && $subtotal < $coupon->min_order_amount) {
+                $is_valid = false;
+            }
+
+            if ($is_valid) {
+                if ($coupon->discount_type === 'flat') {
+                    $coupon_discount = min($subtotal, (float)$coupon->discount_value);
+                } else {
+                    $coupon_discount = ($subtotal * (float)$coupon->discount_value) / 100;
+                    if (!empty($coupon->max_discount_amount) && $coupon_discount > (float)$coupon->max_discount_amount) {
+                        $coupon_discount = (float)$coupon->max_discount_amount;
+                    }
+                }
+                $applied_coupon['discount_amount'] = $coupon_discount;
+                $this->session->set_userdata('applied_coupon', $applied_coupon);
+            } else {
+                $this->session->unset_userdata('applied_coupon');
+                $applied_coupon = null;
+                $coupon_discount = 0.00;
+            }
         }
 
+        // Calculate shipping based on order value
+        $shipping_fee = 0.00;
+        if ($subtotal < 10000) {
+            $shipping_fee = 200.00; // Standard shipping fee
+        }
+
+        $data['applied_coupon'] = $applied_coupon;
+        $data['coupon_discount'] = $coupon_discount;
         $data['shipping'] = $shipping_fee;
-        $data['total'] = $subtotal + $shipping_fee;
-        $data['free_shipping_threshold'] = 20000;
-        $data['is_free_shipping'] = ($subtotal >= 20000);
+        $data['total'] = max(0, $subtotal - $coupon_discount) + $shipping_fee;
+        $data['free_shipping_threshold'] = 10000;
+        $data['is_free_shipping'] = ($subtotal >= 10000);
         $data['total_quantity'] = $total_quantity;
         $data['addresses'] = $addresses;
         $data['default_address'] = $default_address;
@@ -184,6 +224,7 @@ class Checkout extends CI_Controller
         ];
 
         $new_id = $this->General_model->insert('user_addresses', $address_data);
+        $this->General_model->sync_user_default_address($user_id);
         $address = $this->General_model->getOne('user_addresses', ['id' => $new_id]);
 
         $this->output->set_content_type('application/json')->set_output(json_encode([
@@ -231,7 +272,25 @@ class Checkout extends CI_Controller
             return;
         }
 
-        $amount_in_paise = round($subtotal * 100);
+        // Deduct coupon discount if applied and add shipping
+        $coupon_discount = 0.00;
+        $applied_coupon = $this->session->userdata('applied_coupon');
+        if (!empty($applied_coupon)) {
+            $coupon = $this->General_model->getOne('coupons', ['id' => $applied_coupon['id'], 'status' => 1]);
+            if ($coupon && ($coupon->min_order_amount == 0 || $subtotal >= (float)$coupon->min_order_amount)) {
+                if ($coupon->discount_type === 'flat') {
+                    $coupon_discount = min($subtotal, (float)$coupon->discount_value);
+                } else {
+                    $coupon_discount = ($subtotal * (float)$coupon->discount_value) / 100;
+                    if (!empty($coupon->max_discount_amount) && $coupon_discount > (float)$coupon->max_discount_amount) {
+                        $coupon_discount = (float)$coupon->max_discount_amount;
+                    }
+                }
+            }
+        }
+        $shipping_fee = ($subtotal < 10000) ? 200.00 : 0.00;
+        $final_total = max(0, $subtotal - $coupon_discount) + $shipping_fee;
+        $amount_in_paise = round($final_total * 100);
         $receipt = 'RCPT_' . date('Ymd') . '_' . substr(uniqid(), -6);
 
         // Attempt real Razorpay API Order Creation if key/secret configured
@@ -404,11 +463,46 @@ class Checkout extends CI_Controller
 
         // Unique order number
         $order_number = 'SRL-' . date('Ymd') . '-' . strtoupper(substr(uniqid(), -5));
+        // Calculate shipping fee (Free delivery above 10,000)
         $shipping_fee = 0.00;
-        if ($subtotal < 20000) {
-            $shipping_fee = 200.00; // Your shipping charge
+        if ($subtotal < 10000) {
+            $shipping_fee = 200.00; // Standard shipping fee
         }
-        $total_amount = $subtotal + $shipping_fee;
+
+        // Apply coupon discount if active in session
+        $coupon_discount = 0.00;
+        $coupon_code = null;
+        $coupon_id = null;
+        $coupon_obj = null;
+        $applied_coupon = $this->session->userdata('applied_coupon');
+
+        if (!empty($applied_coupon)) {
+            $coupon = $this->General_model->getOne('coupons', ['code' => $applied_coupon['code'], 'status' => 1]);
+            if ($coupon) {
+                $today = date('Y-m-d');
+                $is_valid = true;
+                if (!empty($coupon->start_date) && $coupon->start_date > $today) $is_valid = false;
+                if (!empty($coupon->end_date) && $coupon->end_date < $today) $is_valid = false;
+                if ($coupon->usage_limit > 0 && $coupon->used_count >= $coupon->usage_limit) $is_valid = false;
+                if ($coupon->min_order_amount > 0 && $subtotal < (float)$coupon->min_order_amount) $is_valid = false;
+
+                if ($is_valid) {
+                    if ($coupon->discount_type === 'flat') {
+                        $coupon_discount = min((float)$coupon->discount_value, (float)$subtotal);
+                    } else {
+                        $coupon_discount = round(($subtotal * (float)$coupon->discount_value) / 100, 2);
+                        if ((float)$coupon->max_discount_amount > 0 && $coupon_discount > (float)$coupon->max_discount_amount) {
+                            $coupon_discount = (float)$coupon->max_discount_amount;
+                        }
+                    }
+                    $coupon_code = $coupon->code;
+                    $coupon_id = $coupon->id;
+                    $coupon_obj = $coupon;
+                }
+            }
+        }
+
+        $total_amount = max(0, ($subtotal - $coupon_discount) + $shipping_fee);
 
         // Create Order Record
         $order_data = [
@@ -426,6 +520,8 @@ class Checkout extends CI_Controller
             'shipping_pincode' => $address->pincode,
             'shipping_country' => $address->country ?: 'India',
             'subtotal' => $subtotal,
+            'coupon_code' => $coupon_code,
+            'coupon_discount' => $coupon_discount,
             'shipping_fee' => $shipping_fee,
             'total_amount' => $total_amount,
             'payment_method' => $payment_method,
@@ -439,6 +535,29 @@ class Checkout extends CI_Controller
         ];
 
         $order_id = $this->General_model->insert('orders', $order_data);
+
+        // Record coupon usage and increment coupon used_count if coupon was applied
+        if (!empty($coupon_id) && $coupon_discount > 0 && $coupon_obj) {
+            $this->General_model->insert('coupon_usages', [
+                'coupon_id' => $coupon_id,
+                'order_id' => $order_id,
+                'user_id' => $user_id,
+                'coupon_code' => $coupon_code,
+                'discount_type' => $coupon_obj->discount_type,
+                'discount_value' => $coupon_obj->discount_value,
+                'discount_amount' => $coupon_discount,
+                'order_total' => $total_amount,
+                'created_at' => date('Y-m-d H:i:s')
+            ]);
+
+            // Increment used_count on coupon
+            $this->db->set('used_count', 'used_count + 1', FALSE);
+            $this->db->where('id', $coupon_id);
+            $this->db->update('coupons');
+
+            // Remove applied coupon from session
+            $this->session->unset_userdata('applied_coupon');
+        }
 
         // Insert Order Items and Automatically Deduct Stock from Products
         foreach ($order_items_data as $oi) {

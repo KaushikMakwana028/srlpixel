@@ -91,8 +91,20 @@ $route['admin/banners']                           = 'admin/Home_banners/index';
 // Admin Customer Listing
 $route['admin/customers'] = 'admin/Customers/index';
 $route['admin/customers/ajax_list'] = 'admin/Customers/ajax_list';
+$route['admin/customers/view/(:num)'] = 'admin/Customers/view/$1';
+$route['admin/customers/detail/(:num)'] = 'admin/Customers/view/$1';
 $route['admin/customers/status/(:num)'] = 'admin/Customers/status/$1';
 $route['admin/customers/delete/(:num)'] = 'admin/Customers/delete/$1';
+
+// Admin Coupons Management
+$route['admin/coupons']               = 'admin/Coupons/index';
+$route['admin/coupons/add']           = 'admin/Coupons/add';
+$route['admin/coupons/store']         = 'admin/Coupons/store';
+$route['admin/coupons/edit/(:num)']   = 'admin/Coupons/edit/$1';
+$route['admin/coupons/update/(:num)'] = 'admin/Coupons/update/$1';
+$route['admin/coupons/status/(:num)'] = 'admin/Coupons/status/$1';
+$route['admin/coupons/delete/(:num)'] = 'admin/Coupons/delete/$1';
+$route['admin/coupons/view/(:num)']   = 'admin/Coupons/view/$1';
 
 // Admin Orders Management
 $route['admin/orders'] = 'admin/Orders/index';
@@ -138,6 +150,8 @@ $route['cart/update'] = 'Cart/update_quantity';
 $route['cart/remove/(:num)'] = 'Cart/remove/$1';
 $route['cart/clear'] = 'Cart/clear';
 $route['cart/checkout'] = 'Cart/checkout';
+$route['cart/apply_coupon'] = 'Cart/apply_coupon';
+$route['cart/remove_coupon'] = 'Cart/remove_coupon';
 
 // Step-by-Step Checkout & Orders Flow
 $route['checkout'] = 'Checkout/index';

@@ -615,9 +615,19 @@
                 <span>Items Subtotal:</span>
                 <strong class="text-dark">₹<?= number_format($order->subtotal, 2) ?></strong>
               </li>
+              <?php if (!empty($order->coupon_discount) && (float)$order->coupon_discount > 0): ?>
+                <li class="d-flex justify-content-between py-1 text-success fw-semibold">
+                  <span><i class="bi bi-tag-fill me-1"></i>Coupon Discount (<?= html_escape($order->coupon_code) ?>):</span>
+                  <strong>-₹<?= number_format($order->coupon_discount, 2) ?></strong>
+                </li>
+              <?php endif; ?>
               <li class="d-flex justify-content-between py-1 text-secondary">
                 <span>Delivery Charges:</span>
-                <span class="text-success fw-bold">FREE</span>
+                <?php if (isset($order->shipping_fee) && (float)$order->shipping_fee > 0): ?>
+                  <strong class="text-dark">₹<?= number_format($order->shipping_fee, 2) ?></strong>
+                <?php else: ?>
+                  <span class="text-success fw-bold">FREE</span>
+                <?php endif; ?>
               </li>
             </ul>
 

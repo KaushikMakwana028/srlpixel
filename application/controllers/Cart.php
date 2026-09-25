@@ -48,7 +48,6 @@ class Cart extends CI_Controller {
                         'id'         => $product->id,
                         'name'       => $product->name,
                         'sku'        => $product->sku,
-                        'slug'       => $product->slug,
                         'image'      => $product->image,
                         'stock'      => (int)$product->stock,
                         'price'      => $unit_price,
@@ -77,19 +76,67 @@ class Cart extends CI_Controller {
         $data['default_address'] = $default_address;
         $data['title'] = 'Shopping Cart (' . $total_quantity . ' items) - SRL Pixel';
         $data['cart_items'] = $cart_items;
-       $data['subtotal'] = $subtotal;
+        $data['subtotal'] = $subtotal;
 
-// Calculate shipping based on order value
-$shipping_fee = 0.00;
-if ($subtotal < 20000) {
-    $shipping_fee = 200.00; // Or your desired shipping charge
-}
+        // Verify and calculate applied coupon if present in session
+        $coupon_discount = 0.00;
+        $applied_coupon = $this->session->userdata('applied_coupon');
+        if (!empty($applied_coupon)) {
+            $coupon = $this->General_model->getOne('coupons', ['id' => $applied_coupon['id'], 'status' => 1]);
+            $is_valid = true;
+            $now = date('Y-m-d H:i:s');
 
-$data['shipping'] = $shipping_fee;
-$data['total'] = $subtotal + $shipping_fee;
-$data['free_shipping_threshold'] = 20000;
-$data['is_free_shipping'] = ($subtotal >= 20000);
+            if (!$coupon) {
+                $is_valid = false;
+            } elseif (!empty($coupon->start_date) && $coupon->start_date > $now) {
+                $is_valid = false;
+            } elseif (!empty($coupon->end_date) && $coupon->end_date < $now) {
+                $is_valid = false;
+            } elseif ($coupon->usage_limit > 0 && $coupon->used_count >= $coupon->usage_limit) {
+                $is_valid = false;
+            } elseif ($coupon->min_order_amount > 0 && $subtotal < $coupon->min_order_amount) {
+                $is_valid = false;
+            }
+
+            if ($is_valid) {
+                if ($coupon->discount_type === 'flat') {
+                    $coupon_discount = min($subtotal, (float)$coupon->discount_value);
+                } else {
+                    $coupon_discount = ($subtotal * (float)$coupon->discount_value) / 100;
+                    if (!empty($coupon->max_discount_amount) && $coupon_discount > (float)$coupon->max_discount_amount) {
+                        $coupon_discount = (float)$coupon->max_discount_amount;
+                    }
+                }
+                $applied_coupon['discount_amount'] = $coupon_discount;
+                $this->session->set_userdata('applied_coupon', $applied_coupon);
+            } else {
+                $this->session->unset_userdata('applied_coupon');
+                $applied_coupon = null;
+                $coupon_discount = 0.00;
+            }
+        }
+
+        // Calculate shipping based on order value
+        $shipping_fee = 0.00;
+        if ($subtotal < 10000) {
+            $shipping_fee = 200.00; // Standard shipping fee
+        }
+
+        $data['applied_coupon'] = $applied_coupon;
+        $data['coupon_discount'] = $coupon_discount;
+        $data['shipping'] = $shipping_fee;
+        $data['total'] = max(0, $subtotal - $coupon_discount) + $shipping_fee;
+        $data['free_shipping_threshold'] = 10000;
+        $data['is_free_shipping'] = ($subtotal >= 10000);
         $data['total_quantity'] = $total_quantity;
+
+        // Fetch active available coupons for quick apply suggestion
+        $this->db->where('status', 1);
+        $this->db->where('(end_date IS NULL OR end_date >= "' . date('Y-m-d H:i:s') . '")', NULL, FALSE);
+        $this->db->where('(usage_limit = 0 OR used_count < usage_limit)', NULL, FALSE);
+        $this->db->order_by('id DESC');
+        $this->db->limit(3);
+        $data['available_coupons'] = $this->db->get('coupons')->result();
 
         $this->load->view('header', $data);
         $this->load->view('cart_view', $data);
@@ -251,27 +298,54 @@ $data['is_free_shipping'] = ($subtotal >= 20000);
             }
         }
 
-       // Calculate shipping
-$shipping_fee = 0.00;
-if ($subtotal < 20000) {
-    $shipping_fee = 200.00;
-}
-$total = $subtotal + $shipping_fee;
-$is_free_shipping = ($subtotal >= 20000);
+        // Recalculate coupon discount if applied
+        $coupon_discount = 0.00;
+        $coupon_code = null;
+        $applied_coupon = $this->session->userdata('applied_coupon');
+        if (!empty($applied_coupon)) {
+            $coupon = $this->General_model->getOne('coupons', ['id' => $applied_coupon['id'], 'status' => 1]);
+            if ($coupon && ($coupon->min_order_amount == 0 || $subtotal >= (float)$coupon->min_order_amount)) {
+                if ($coupon->discount_type === 'flat') {
+                    $coupon_discount = min($subtotal, (float)$coupon->discount_value);
+                } else {
+                    $coupon_discount = ($subtotal * (float)$coupon->discount_value) / 100;
+                    if (!empty($coupon->max_discount_amount) && $coupon_discount > (float)$coupon->max_discount_amount) {
+                        $coupon_discount = (float)$coupon->max_discount_amount;
+                    }
+                }
+                $applied_coupon['discount_amount'] = $coupon_discount;
+                $this->session->set_userdata('applied_coupon', $applied_coupon);
+                $coupon_code = $coupon->code;
+            } else {
+                $this->session->unset_userdata('applied_coupon');
+                $applied_coupon = null;
+            }
+        }
 
-$this->output
-    ->set_content_type('application/json')
-    ->set_output(json_encode([
-        'success' => true,
-        'cart_count' => $cart_count,
-        'item_total' => number_format($item_total, 2),
-        'subtotal' => number_format($subtotal, 2),
-        'shipping' => number_format($shipping_fee, 2),
-        'total' => number_format($total, 2),
-        'is_free_shipping' => $is_free_shipping,
-        'free_shipping_threshold' => 20000,
-        'is_empty' => empty($remaining_items)
-    ]));
+        // Calculate shipping
+        $shipping_fee = 0.00;
+        if ($subtotal < 10000) {
+            $shipping_fee = 200.00;
+        }
+        $total = max(0, $subtotal - $coupon_discount) + $shipping_fee;
+        $is_free_shipping = ($subtotal >= 10000);
+
+        $this->output
+            ->set_content_type('application/json')
+            ->set_output(json_encode([
+                'success' => true,
+                'cart_count' => $cart_count,
+                'item_total' => number_format($item_total, 2),
+                'subtotal' => number_format($subtotal, 2),
+                'shipping' => number_format($shipping_fee, 2),
+                'coupon_discount' => number_format($coupon_discount, 2),
+                'coupon_code' => $coupon_code,
+                'has_coupon' => !empty($coupon_code),
+                'total' => number_format($total, 2),
+                'is_free_shipping' => $is_free_shipping,
+                'free_shipping_threshold' => 10000,
+                'is_empty' => empty($remaining_items)
+            ]));
     }
 
     /**
@@ -306,11 +380,195 @@ $this->output
     }
 
     /**
-     * Legacy checkout endpoint - redirect to step-by-step checkout page
+     * Apply Coupon Code to Shopping Cart via AJAX / POST
      */
-    public function checkout()
+    public function apply_coupon()
     {
-        redirect('checkout');
+        if (!$this->session->userdata('user_logged_in') || $this->session->userdata('user_role') != 0) {
+            $this->output->set_content_type('application/json')->set_output(json_encode([
+                'success' => false,
+                'message' => 'Please sign in to your account to apply coupons.'
+            ]));
+            return;
+        }
+
+        $user_id = (int)$this->session->userdata('user_id');
+        $code = strtoupper(trim($this->input->post('coupon_code') ?? ''));
+
+        if (empty($code)) {
+            $this->output->set_content_type('application/json')->set_output(json_encode([
+                'success' => false,
+                'message' => 'Please enter a valid coupon code.'
+            ]));
+            return;
+        }
+
+        // Calculate current cart subtotal
+        $db_cart = $this->General_model->getAll('cart', ['user_id' => $user_id]);
+        $subtotal = 0.00;
+        if (!empty($db_cart)) {
+            foreach ($db_cart as $item) {
+                $product = $this->General_model->getOne('products', ['id' => $item->product_id, 'status' => 1]);
+                if ($product) {
+                    $unit_price = (!empty($product->discount_price) && $product->discount_price < $product->price)
+                        ? (float)$product->discount_price
+                        : (float)$product->price;
+                    $subtotal += ($unit_price * (int)$item->quantity);
+                }
+            }
+        }
+
+        if ($subtotal <= 0) {
+            $this->output->set_content_type('application/json')->set_output(json_encode([
+                'success' => false,
+                'message' => 'Your cart is empty. Please add items before applying coupons.'
+            ]));
+            return;
+        }
+
+        // Search coupon in DB
+        $coupon = $this->General_model->getOne('coupons', ['code' => $code]);
+        if (!$coupon) {
+            $this->output->set_content_type('application/json')->set_output(json_encode([
+                'success' => false,
+                'message' => 'Invalid coupon code. Please check and try again.'
+            ]));
+            return;
+        }
+
+        if ($coupon->status != 1) {
+            $this->output->set_content_type('application/json')->set_output(json_encode([
+                'success' => false,
+                'message' => 'This coupon has expired or is no longer available.'
+            ]));
+            return;
+        }
+
+        $now = date('Y-m-d H:i:s');
+
+        // Check start date
+        if (!empty($coupon->start_date) && $coupon->start_date > $now) {
+            $this->output->set_content_type('application/json')->set_output(json_encode([
+                'success' => false,
+                'message' => 'This coupon offer is not active yet. It will be available on ' . date('d M Y', strtotime($coupon->start_date)) . '.'
+            ]));
+            return;
+        }
+
+        // Check expiration date
+        if (!empty($coupon->end_date) && $coupon->end_date < $now) {
+            $this->output->set_content_type('application/json')->set_output(json_encode([
+                'success' => false,
+                'message' => 'This coupon has expired and is no longer valid.'
+            ]));
+            return;
+        }
+
+        // Check total usage limit
+        if ($coupon->usage_limit > 0 && $coupon->used_count >= $coupon->usage_limit) {
+            $this->output->set_content_type('application/json')->set_output(json_encode([
+                'success' => false,
+                'message' => 'This coupon has expired or is no longer available.'
+            ]));
+            return;
+        }
+
+        // Check per-user limit
+        if ($coupon->per_user_limit > 0) {
+            $user_usage_count = $this->General_model->count_filtered_data('coupon_usages', [
+                'coupon_id' => $coupon->id,
+                'user_id'   => $user_id
+            ]);
+            if ($user_usage_count >= $coupon->per_user_limit) {
+                $this->output->set_content_type('application/json')->set_output(json_encode([
+                    'success' => false,
+                    'message' => 'You have already used this coupon code on a previous order.'
+                ]));
+                return;
+            }
+        }
+
+        // Check minimum order amount requirement
+        if ($coupon->min_order_amount > 0 && $subtotal < (float)$coupon->min_order_amount) {
+            $diff = (float)$coupon->min_order_amount - $subtotal;
+            $this->output->set_content_type('application/json')->set_output(json_encode([
+                'success' => false,
+                'message' => 'Minimum order amount of ₹' . number_format($coupon->min_order_amount, 2) . ' required. Add ₹' . number_format($diff, 2) . ' more items to apply this coupon.'
+            ]));
+            return;
+        }
+
+        // Calculate discount
+        $discount = 0.00;
+        if ($coupon->discount_type === 'flat') {
+            $discount = min($subtotal, (float)$coupon->discount_value);
+        } else {
+            $discount = ($subtotal * (float)$coupon->discount_value) / 100;
+            if (!empty($coupon->max_discount_amount) && $discount > (float)$coupon->max_discount_amount) {
+                $discount = (float)$coupon->max_discount_amount;
+            }
+        }
+
+        // Save into session
+        $applied_coupon = [
+            'id'                  => $coupon->id,
+            'code'                => $coupon->code,
+            'title'               => $coupon->title,
+            'discount_type'       => $coupon->discount_type,
+            'discount_value'      => (float)$coupon->discount_value,
+            'discount_amount'     => $discount,
+            'min_order_amount'    => (float)$coupon->min_order_amount,
+            'max_discount_amount' => $coupon->max_discount_amount ? (float)$coupon->max_discount_amount : null
+        ];
+
+        $this->session->set_userdata('applied_coupon', $applied_coupon);
+
+        $shipping_fee = ($subtotal < 10000) ? 200.00 : 0.00;
+        $new_total = max(0, $subtotal - $discount) + $shipping_fee;
+
+        $this->output->set_content_type('application/json')->set_output(json_encode([
+            'success'         => true,
+            'message'         => 'Coupon "' . $coupon->code . '" applied successfully! You saved ₹' . number_format($discount, 2) . '.',
+            'coupon_code'     => $coupon->code,
+            'discount_amount' => number_format($discount, 2),
+            'discount_raw'    => $discount,
+            'subtotal'        => number_format($subtotal, 2),
+            'shipping'        => number_format($shipping_fee, 2),
+            'total'           => number_format($new_total, 2)
+        ]));
+    }
+
+    /**
+     * Remove applied coupon
+     */
+    public function remove_coupon()
+    {
+        $this->session->unset_userdata('applied_coupon');
+
+        $user_id = (int)$this->session->userdata('user_id');
+        $db_cart = $this->General_model->getAll('cart', ['user_id' => $user_id]);
+        $subtotal = 0.00;
+        if (!empty($db_cart)) {
+            foreach ($db_cart as $item) {
+                $product = $this->General_model->getOne('products', ['id' => $item->product_id, 'status' => 1]);
+                if ($product) {
+                    $unit_price = (!empty($product->discount_price) && $product->discount_price < $product->price)
+                        ? (float)$product->discount_price
+                        : (float)$product->price;
+                    $subtotal += ($unit_price * (int)$item->quantity);
+                }
+            }
+        }
+        $shipping_fee = ($subtotal < 10000) ? 200.00 : 0.00;
+        $total = $subtotal + $shipping_fee;
+
+        $this->output->set_content_type('application/json')->set_output(json_encode([
+            'success'  => true,
+            'message'  => 'Coupon removed successfully.',
+            'subtotal' => number_format($subtotal, 2),
+            'shipping' => number_format($shipping_fee, 2),
+            'total'    => number_format($total, 2)
+        ]));
     }
 }
 

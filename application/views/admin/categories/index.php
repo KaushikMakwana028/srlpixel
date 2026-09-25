@@ -16,7 +16,7 @@
     <div class="col-12 col-md-5 col-lg-4">
       <div class="srl-filter-input-wrap">
         <i class="bi bi-search"></i>
-        <input type="text" id="categorySearchInput" class="form-control form-control-sm srl-filter-input" placeholder="Search categories by name, slug, description...">
+        <input type="text" id="categorySearchInput" class="form-control form-control-sm srl-filter-input" placeholder="Search categories by name, description...">
       </div>
     </div>
     <div class="col-6 col-md-3 col-lg-3">
@@ -61,7 +61,6 @@
             <th style="width: 50px;" class="ps-3 ps-sm-4 d-none d-sm-table-cell">#</th>
             <th style="width: 70px;">Image</th>
             <th>Category Name</th>
-            <th class="d-none d-md-table-cell">Slug</th>
             <th class="d-none d-lg-table-cell">Description</th>
             <th style="width: 95px;">Status</th>
             <th class="d-none d-md-table-cell" style="width: 130px;">Created</th>

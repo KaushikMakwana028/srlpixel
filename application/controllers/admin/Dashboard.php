@@ -91,6 +91,14 @@ class Dashboard extends CI_Controller {
         $data['out_of_stock_count']     = $this->General_model->count_filtered_data('products', ['stock <=' => 0]);
         $data['low_stock_count']        = $this->db->where('stock >', 0)->where('stock <=', 5)->count_all_results('products');
 
+        // 4b. Coupons & Promotions Metrics
+        $data['active_coupons_count']   = $this->General_model->count_filtered_data('coupons', ['status' => 1]);
+        $coupon_stats = $this->db->select('COUNT(id) as total_redemptions, COALESCE(SUM(discount_amount), 0) as total_savings')
+                                 ->get('coupon_usages')
+                                 ->row();
+        $data['total_coupon_savings']   = $coupon_stats ? (float)$coupon_stats->total_savings : 0.00;
+        $data['total_coupon_uses']      = $coupon_stats ? (int)$coupon_stats->total_redemptions : 0;
+
         // 5. Recent 5 Online Orders
         $data['recent_orders'] = $this->db->select('id, order_number, shipping_full_name, shipping_mobile, shipping_city, total_amount, payment_method, payment_status, order_status, created_at')
                                           ->where('order_type', 'online')
@@ -108,7 +116,7 @@ class Dashboard extends CI_Controller {
                                             ->result();
 
         // 7. Top 5 Out of Stock Products
-        $data['out_of_stock_products'] = $this->db->select('p.id, p.name, p.slug, p.sku, p.price, p.discount_price, p.stock, p.image, p.status, c.name as category_name')
+        $data['out_of_stock_products'] = $this->db->select('p.id, p.name, p.sku, p.price, p.discount_price, p.stock, p.image, p.status, c.name as category_name')
                                                  ->from('products p')
                                                  ->join('categories c', 'c.id = p.category_id', 'left')
                                                  ->where('p.stock <=', 0)
@@ -118,7 +126,7 @@ class Dashboard extends CI_Controller {
                                                  ->result();
 
         // Lowest stock products for inventory insights if none currently out of stock
-        $data['lowest_stock_products'] = $this->db->select('p.id, p.name, p.slug, p.sku, p.price, p.discount_price, p.stock, p.image, p.status, c.name as category_name')
+        $data['lowest_stock_products'] = $this->db->select('p.id, p.name, p.sku, p.price, p.discount_price, p.stock, p.image, p.status, c.name as category_name')
                                                  ->from('products p')
                                                  ->join('categories c', 'c.id = p.category_id', 'left')
                                                  ->order_by('p.stock', 'ASC')

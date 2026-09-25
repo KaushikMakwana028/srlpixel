@@ -15,10 +15,6 @@
       </td>
       <td>
         <span class="fw-bold text-dark d-block"><?= html_escape($cat->name) ?></span>
-        <span class="d-md-none text-muted small"><code>/<?= html_escape($cat->slug) ?></code></span>
-      </td>
-      <td class="d-none d-md-table-cell">
-        <code class="text-muted small">/<?= html_escape($cat->slug) ?></code>
       </td>
       <td class="text-muted small d-none d-lg-table-cell" style="max-width: 260px;">
         <?= !empty($cat->description) ? html_escape(character_limiter($cat->description, 60)) : '<span class="text-secondary opacity-50">No description</span>' ?>
@@ -49,7 +45,7 @@
   <?php endforeach; ?>
 <?php else: ?>
   <tr>
-    <td colspan="8" class="text-center py-5 text-muted">
+    <td colspan="7" class="text-center py-5 text-muted">
       <i class="bi bi-folder-x fs-1 d-block mb-2 text-secondary"></i>
       No categories found matching your criteria.
     </td>

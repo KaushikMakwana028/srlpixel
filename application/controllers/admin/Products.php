@@ -176,9 +176,7 @@ class Products extends CI_Controller {
 
             if ($this->form_validation->run() === TRUE) {
                 $name = $this->input->post('name', TRUE);
-                $slug = url_title($this->input->post('slug') ? $this->input->post('slug') : $name, 'dash', TRUE);
                 $category_id = (int) $this->input->post('category_id');
-                $sku = $this->input->post('sku', TRUE);
                 $price = (float) $this->input->post('price');
                 $discount_price = $this->input->post('discount_price') !== '' ? (float) $this->input->post('discount_price') : NULL;
                 $stock = (int) $this->input->post('stock');
@@ -208,8 +206,8 @@ class Products extends CI_Controller {
                 $insert_data = [
                     'category_id'       => $category_id,
                     'name'              => $name,
-                    'slug'              => $slug,
-                    'sku'               => $sku,
+                    'slug'              => NULL,
+                    'sku'               => NULL,
                     'price'             => $price,
                     'discount_price'    => $discount_price,
                     'stock'             => $stock,
@@ -273,9 +271,7 @@ class Products extends CI_Controller {
 
             if ($this->form_validation->run() === TRUE) {
                 $name = $this->input->post('name', TRUE);
-                $slug = url_title($this->input->post('slug') ? $this->input->post('slug') : $name, 'dash', TRUE);
                 $category_id = (int) $this->input->post('category_id');
-                $sku = $this->input->post('sku', TRUE);
                 $price = (float) $this->input->post('price');
                 $discount_price = $this->input->post('discount_price') !== '' ? (float) $this->input->post('discount_price') : NULL;
                 $stock = (int) $this->input->post('stock');
@@ -307,8 +303,8 @@ class Products extends CI_Controller {
                 $update_data = [
                     'category_id'       => $category_id,
                     'name'              => $name,
-                    'slug'              => $slug,
-                    'sku'               => $sku,
+                    'slug'              => NULL,
+                    'sku'               => NULL,
                     'price'             => $price,
                     'discount_price'    => $discount_price,
                     'stock'             => $stock,

@@ -247,7 +247,7 @@
               <p class="text-muted small mb-0">Choose where you'd like your pixel LED products delivered.</p>
             </div>
             <button type="button" class="btn btn-sm btn-outline-dark rounded-pill px-3 py-2" id="btnToggleNewAddress">
-              <i class="bi bi-plus-lg me-1"></i>+ Add New Address
+              <i class="bi bi-plus-lg me-1"></i>Add New Address
             </button>
           </div>
 
@@ -486,7 +486,7 @@
           <!-- Items Review List -->
           <div class="mb-4">
             <h6 class="fw-bold text-dark mb-3">Order Items (<?= count($cart_items) ?>)</h6>
-            <div class="d-flex flex-column gap-2">
+            <div class="d-flex flex-column gap-2 mb-3">
               <?php foreach ($cart_items as $ci): ?>
                 <div class="p-3 rounded-3 border d-flex align-items-center justify-content-between flex-wrap gap-3 bg-white">
                   <div class="d-flex align-items-center gap-3">
@@ -510,6 +510,21 @@
                 </div>
               <?php endforeach; ?>
             </div>
+
+            <?php if (!empty($applied_coupon) && $coupon_discount > 0): ?>
+              <div class="p-3 rounded-3 border d-flex align-items-center justify-content-between" style="background: #ecfdf5; border-color: #a7f3d0 !important;">
+                <div class="d-flex align-items-center gap-2">
+                  <i class="bi bi-tag-fill text-success fs-5"></i>
+                  <div>
+                    <span class="fw-bold text-success">Coupon "<?= html_escape($applied_coupon['code']) ?>" Applied</span>
+                    <small class="text-muted d-block"><?= html_escape($applied_coupon['title']) ?></small>
+                  </div>
+                </div>
+                <div class="text-end">
+                  <span class="fw-bold text-success fs-6">-₹<?= number_format($coupon_discount, 2) ?></span>
+                </div>
+              </div>
+            <?php endif; ?>
           </div>
 
           <!-- Order Notes Field (Optional) -->
@@ -549,19 +564,49 @@
           <strong class="text-dark">₹<?= number_format($subtotal, 2) ?></strong>
         </div>
 
-       <div class="d-flex justify-content-between align-items-center mb-2 small">
-    <span class="text-secondary">Delivery Charges</span>
-    <?php if ($is_free_shipping): ?>
-        <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">FREE</span>
-    <?php else: ?>
-        <strong class="text-dark">₹<?= number_format($shipping, 2) ?></strong>
-    <?php endif; ?>
-</div>
+        <?php if (!empty($applied_coupon) && $coupon_discount > 0): ?>
+          <div class="d-flex justify-content-between align-items-center mb-2 small text-success">
+            <span class="d-flex align-items-center gap-1.5 fw-semibold">
+              <i class="bi bi-tag-fill"></i> Coupon Discount (<?= html_escape($applied_coupon['code']) ?>)
+            </span>
+            <strong class="text-success">-₹<?= number_format($coupon_discount, 2) ?></strong>
+          </div>
+        <?php endif; ?>
 
-        <!-- <div class="d-flex justify-content-between align-items-center mb-3 small">
-          <span class="text-secondary">Estimated GST / Taxes</span>
-          <span class="text-muted">Included</span>
-        </div> -->
+        <div class="d-flex justify-content-between align-items-center mb-2 small">
+          <span class="text-secondary">Delivery Charges</span>
+          <?php if ($is_free_shipping): ?>
+            <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">FREE</span>
+          <?php else: ?>
+            <strong class="text-dark">₹<?= number_format($shipping, 2) ?></strong>
+          <?php endif; ?>
+        </div>
+
+        <!-- Coupon Code Widget -->
+        <div class="my-3 pt-2 border-top">
+          <?php if (!empty($applied_coupon)): ?>
+            <div class="p-2.5 rounded-3 border d-flex align-items-center justify-content-between" style="background: #ecfdf5; border-color: #a7f3d0 !important;">
+              <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-tag-fill text-success"></i>
+                <div>
+                  <span class="fw-bold text-success small"><?= html_escape($applied_coupon['code']) ?></span>
+                  <small class="text-muted d-block" style="font-size: 0.72rem;">Saved ₹<?= number_format($coupon_discount, 2) ?></small>
+                </div>
+              </div>
+              <button type="button" class="btn btn-sm btn-link text-danger p-0 text-decoration-none fw-bold" onclick="removeCheckoutCoupon()" style="font-size: 0.75rem;">
+                <i class="bi bi-x-circle me-1"></i>Remove
+              </button>
+            </div>
+          <?php else: ?>
+            <div class="input-group input-group-sm rounded-pill overflow-hidden border p-1" style="background: #f8fafc;">
+              <input type="text" class="form-control border-0 bg-transparent py-1 text-uppercase fw-semibold" id="chkCouponInput" placeholder="COUPON CODE" style="font-size: 0.8rem; box-shadow: none;">
+              <button class="btn btn-srl-primary rounded-pill px-3 py-1 fw-bold text-uppercase" type="button" onclick="applyCheckoutCoupon()" style="font-size: 0.75rem;">
+                Apply
+              </button>
+            </div>
+            <div id="chkCouponFeedback" class="small mt-1 text-danger" style="display: none;"></div>
+          <?php endif; ?>
+        </div>
 
         <hr class="my-3" style="opacity: 0.1;">
 
@@ -618,6 +663,61 @@ let selectedPaymentMethod = 'Cash on Delivery';
 let razorpayKeyId = '<?= $razorpay_key_id ?>';
 let totalAmountPaise = <?= round($total * 100) ?>;
 let currency = '<?= $currency ?>';
+
+// Checkout Coupon functions
+function applyCheckoutCoupon() {
+  const input = document.getElementById('chkCouponInput');
+  const feedback = document.getElementById('chkCouponFeedback');
+  if (!input) return;
+  const code = input.value.trim().toUpperCase();
+  if (!code) {
+    if (feedback) {
+      feedback.style.display = 'block';
+      feedback.innerText = 'Please enter a coupon code.';
+    }
+    return;
+  }
+  const fd = new FormData();
+  fd.append('coupon_code', code);
+  fetch('<?= base_url('cart/apply_coupon') ?>', {
+    method: 'POST',
+    body: fd,
+    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.success) {
+      window.location.reload();
+    } else {
+      if (feedback) {
+        feedback.style.display = 'block';
+        feedback.innerText = data.message || 'Invalid coupon code or expired.';
+      }
+    }
+  })
+  .catch(err => {
+    console.error('Coupon error:', err);
+    if (feedback) {
+      feedback.style.display = 'block';
+      feedback.innerText = 'Error applying coupon. Please try again.';
+    }
+  });
+}
+
+function removeCheckoutCoupon() {
+  fetch('<?= base_url('cart/remove_coupon') ?>', {
+    method: 'POST',
+    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+  })
+  .then(r => r.json())
+  .then(data => {
+    window.location.reload();
+  })
+  .catch(err => {
+    console.error('Coupon error:', err);
+    window.location.reload();
+  });
+}
 
 // Address selection function
 function selectAddress(id, element) {

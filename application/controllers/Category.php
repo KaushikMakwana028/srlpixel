@@ -40,21 +40,15 @@ class Category extends CI_Controller {
     /**
      * Show products for a specific category
      */
-    public function view($id_or_slug = NULL)
+    public function view($id = NULL)
     {
-        if (empty($id_or_slug)) {
+        if (empty($id)) {
             redirect('categories');
             return;
         }
 
-        // Find Category by ID or Slug
-        $category = null;
-        if (is_numeric($id_or_slug)) {
-            $category = $this->General_model->getOne('categories', ['id' => $id_or_slug, 'status' => 1]);
-        }
-        if (!$category) {
-            $category = $this->General_model->getOne('categories', ['slug' => $id_or_slug, 'status' => 1]);
-        }
+        // Find Category by ID
+        $category = $this->General_model->getOne('categories', ['id' => $id, 'status' => 1]);
 
         if (!$category) {
             show_404();

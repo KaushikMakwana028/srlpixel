@@ -31,7 +31,21 @@ class Customers extends CI_Controller {
         $total = $this->General_model->count_filtered_data('user', $where);
         $total_pages = max(1, ceil($total / $limit));
 
-        $data['customers'] = $this->General_model->get_paginated_data('user', $where, [], $limit, $offset, 'id DESC');
+        $customers = $this->General_model->get_paginated_data('user', $where, [], $limit, $offset, 'id DESC');
+        if (!empty($customers)) {
+            foreach ($customers as &$cust) {
+                if (empty($cust->address)) {
+                    $this->General_model->sync_user_default_address($cust->id);
+                    $fresh = $this->General_model->getOne('user', ['id' => $cust->id]);
+                    if ($fresh && !empty($fresh->address)) {
+                        $cust->address = $fresh->address;
+                    }
+                }
+            }
+            unset($cust);
+        }
+
+        $data['customers'] = $customers;
         $data['offset'] = $offset;
         $data['total'] = $total;
         $data['limit'] = $limit;
@@ -64,6 +78,7 @@ class Customers extends CI_Controller {
             $like['name']  = $search;
             $like['email'] = $search;
             $like['phone'] = $search;
+            $like['address'] = $search;
         }
 
         $total = $this->General_model->count_filtered_data('user', $where, $like);
@@ -74,6 +89,18 @@ class Customers extends CI_Controller {
         $offset = ($page - 1) * $limit;
 
         $customers = $this->General_model->get_paginated_data('user', $where, $like, $limit, $offset, 'id DESC');
+        if (!empty($customers)) {
+            foreach ($customers as &$cust) {
+                if (empty($cust->address)) {
+                    $this->General_model->sync_user_default_address($cust->id);
+                    $fresh = $this->General_model->getOne('user', ['id' => $cust->id]);
+                    if ($fresh && !empty($fresh->address)) {
+                        $cust->address = $fresh->address;
+                    }
+                }
+            }
+            unset($cust);
+        }
 
         $html = $this->load->view('admin/customers/_rows', [
             'customers' => $customers,
@@ -95,6 +122,72 @@ class Customers extends CI_Controller {
     }
 
     /**
+     * View complete customer profile details & order history
+     */
+    public function view($id = NULL)
+    {
+        if (empty($id)) {
+            redirect('admin/customers');
+            return;
+        }
+
+        $customer = $this->General_model->getOne('user', ['id' => (int)$id, 'role' => 0]);
+        if (!$customer) {
+            $this->session->set_flashdata('error', 'Customer account not found.');
+            redirect('admin/customers');
+            return;
+        }
+
+        // Ensure default address is synced into user.address
+        $this->General_model->sync_user_default_address($customer->id);
+        $customer = $this->General_model->getOne('user', ['id' => (int)$id]);
+
+        // All saved delivery addresses
+        $addresses = $this->General_model->getAll('user_addresses', ['user_id' => $customer->id]);
+
+        // All orders placed by this customer
+        $orders = $this->General_model->getAll('orders', ['user_id' => $customer->id]);
+        if (empty($orders) && !empty($customer->phone)) {
+            $orders = $this->General_model->getAll('orders', ['shipping_mobile' => $customer->phone]);
+        }
+
+        // Sort orders by id DESC
+        if (!empty($orders)) {
+            usort($orders, function($a, $b) {
+                return (int)$b->id - (int)$a->id;
+            });
+        }
+
+        // Compute metrics
+        $total_orders = !empty($orders) ? count($orders) : 0;
+        $total_spent = 0;
+        $completed_orders = 0;
+        if (!empty($orders)) {
+            foreach ($orders as $ord) {
+                if ($ord->order_status !== 'Cancelled') {
+                    $total_spent += (float)$ord->total_amount;
+                }
+                if ($ord->order_status === 'Delivered') {
+                    $completed_orders++;
+                }
+            }
+        }
+
+        $data['title']            = 'Customer Details: ' . html_escape($customer->name) . ' - SRL Pixel Admin';
+        $data['breadcrumb']       = 'Customer Profile';
+        $data['customer']         = $customer;
+        $data['addresses']        = $addresses;
+        $data['orders']           = $orders;
+        $data['total_orders']     = $total_orders;
+        $data['total_spent']      = $total_spent;
+        $data['completed_orders'] = $completed_orders;
+
+        $this->load->view('admin/header', $data);
+        $this->load->view('admin/customers/view', $data);
+        $this->load->view('admin/footer', $data);
+    }
+
+    /**
      * Toggle Customer status (Active <-> Inactive)
      */
     public function status($id = NULL)
@@ -109,7 +202,12 @@ class Customers extends CI_Controller {
                 $this->session->set_flashdata('error', 'Customer not found or invalid role.');
             }
         }
-        redirect('admin/customers');
+        $referer = $this->input->server('HTTP_REFERER');
+        if (!empty($referer) && strpos($referer, base_url()) !== false) {
+            redirect($referer);
+        } else {
+            redirect('admin/customers');
+        }
     }
 
     /**

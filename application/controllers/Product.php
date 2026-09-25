@@ -62,21 +62,15 @@ class Product extends CI_Controller {
     /**
      * Product Details Page with Interactive Multi-Angle Gallery
      */
-    public function detail($id_or_slug = NULL)
+    public function detail($id = NULL)
     {
-        if (empty($id_or_slug)) {
+        if (empty($id)) {
             redirect('products');
             return;
         }
 
-        // Find Product by ID or Slug
-        $product = null;
-        if (is_numeric($id_or_slug)) {
-            $product = $this->General_model->getOne('products', ['id' => $id_or_slug, 'status' => 1]);
-        }
-        if (!$product) {
-            $product = $this->General_model->getOne('products', ['slug' => $id_or_slug, 'status' => 1]);
-        }
+        // Find Product by ID
+        $product = $this->General_model->getOne('products', ['id' => $id, 'status' => 1]);
 
         if (!$product) {
             show_404();

@@ -44,22 +44,24 @@ class Login extends CI_Controller {
                     return;
                 }
 
-                        // Generate 6 digit OTP
-                $otp = random_int(100000, 999999);
+                // Generate 6 digit OTP (Default: 123456 for testing | Uncomment random_int for production)
+                $otp = 123456;
+                // $otp = random_int(100000, 999999);
 
                 // Store OTP in session
                 $this->session->set_userdata('otp_session', [
-                'type'             => 'login',
-                'user_id'          => $user->id,
-                'phone'            => $user->phone,
-                'otp'              => $otp,
-                'otp_expiry'       => time() + 600,
-                'otp_attempts'     => 0,
-                'otp_generated_at' => time()
+                    'type'             => 'login',
+                    'user_id'          => $user->id,
+                    'phone'            => $user->phone,
+                    'otp'              => $otp,
+                    'otp_expiry'       => time() + 600,
+                    'otp_attempts'     => 0,
+                    'otp_generated_at' => time()
                 ]);
 
-                // Send OTP
-                $sms_result = $this->send_otp_via_sms($user->phone, (string) $otp);
+                // Send OTP (Commented for testing - uncomment line below for real-time OTP via SMS)
+                $sms_result = true;
+                // $sms_result = $this->send_otp_via_sms($user->phone, (string) $otp);
 
                 if ($sms_result) {
                 $this->session->set_flashdata(
@@ -127,23 +129,25 @@ class Login extends CI_Controller {
                 }
 
                 // Generate & send OTP
-               // Generate 6 digit OTP
-$otp = random_int(100000, 999999);
+                // Generate 6 digit OTP (Default: 123456 for testing | Uncomment random_int for production)
+                $otp = 123456;
+                // $otp = random_int(100000, 999999);
 
-// Store OTP in session
-$this->session->set_userdata('otp_session', [
-    'type'             => 'register',
-    'name'             => $name,
-    'email'            => $email,
-    'phone'            => $phone,
-    'otp'              => $otp,
-    'otp_expiry'       => time() + 600,
-    'otp_attempts'     => 0,
-    'otp_generated_at' => time()
-]);
+                // Store OTP in session
+                $this->session->set_userdata('otp_session', [
+                    'type'             => 'register',
+                    'name'             => $name,
+                    'email'            => $email,
+                    'phone'            => $phone,
+                    'otp'              => $otp,
+                    'otp_expiry'       => time() + 600,
+                    'otp_attempts'     => 0,
+                    'otp_generated_at' => time()
+                ]);
 
-// Send OTP
-$sms_result = $this->send_otp_via_sms($phone, (string) $otp);
+                // Send OTP (Commented for testing - uncomment line below for real-time OTP via SMS)
+                $sms_result = true;
+                // $sms_result = $this->send_otp_via_sms($phone, (string) $otp);
 
 if ($sms_result) {
     $this->session->set_flashdata(
@@ -303,19 +307,23 @@ if ($sms_result) {
             return;
         }
 
-        $otp = rand(100000, 999999);
+        // Generate 6 digit OTP (Default: 123456 for testing | Uncomment random_int for production)
+        $otp = 123456;
+        // $otp = random_int(100000, 999999);
+
         $otp_session['otp'] = $otp;
         $otp_session['otp_expiry'] = time() + 600;
         $otp_session['otp_generated_at'] = time();
         $otp_session['otp_attempts'] = 0;
         $this->session->set_userdata('otp_session', $otp_session);
 
-        $this->load->library('sms_library');
-        $sms_result = $this->sms_library->send_otp($otp_session['phone'], $otp);
+        // Send OTP (Commented for testing - uncomment line below for real-time OTP via SMS)
+        $sms_result = true;
+        // $sms_result = $this->send_otp_via_sms($otp_session['phone'], (string) $otp);
 
         $this->output->set_content_type('application/json')->set_output(json_encode([
-            'success' => $sms_result['success'],
-            'message' => $sms_result['success'] ? 'OTP resent successfully to your mobile.' : $sms_result['message']
+            'success' => $sms_result,
+            'message' => $sms_result ? 'OTP resent successfully to your mobile.' : 'Failed to send OTP. Please try again.'
         ]));
     }
 

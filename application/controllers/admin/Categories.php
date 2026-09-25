@@ -60,7 +60,6 @@ class Categories extends CI_Controller {
         $like = [];
         if (!empty($search)) {
             $like['name'] = $search;
-            $like['slug'] = $search;
             $like['description'] = $search;
         }
 
@@ -103,7 +102,6 @@ class Categories extends CI_Controller {
 
             if ($this->form_validation->run() === TRUE) {
                 $name = $this->input->post('name', TRUE);
-                $slug = url_title($this->input->post('slug') ? $this->input->post('slug') : $name, 'dash', TRUE);
                 $description = $this->input->post('description', TRUE);
                 $status = $this->input->post('status') ? 1 : 0;
 
@@ -128,7 +126,7 @@ class Categories extends CI_Controller {
 
                 $insert_data = [
                     'name'        => $name,
-                    'slug'        => $slug,
+                    'slug'        => NULL,
                     'parent_id'   => 0,
                     'description' => $description,
                     'image'       => $image_name,
@@ -181,7 +179,6 @@ class Categories extends CI_Controller {
 
             if ($this->form_validation->run() === TRUE) {
                 $name = $this->input->post('name', TRUE);
-                $slug = url_title($this->input->post('slug') ? $this->input->post('slug') : $name, 'dash', TRUE);
                 $description = $this->input->post('description', TRUE);
                 $status = $this->input->post('status') ? 1 : 0;
 
@@ -209,7 +206,7 @@ class Categories extends CI_Controller {
 
                 $update_data = [
                     'name'        => $name,
-                    'slug'        => $slug,
+                    'slug'        => NULL,
                     'description' => $description,
                     'image'       => $image_name,
                     'status'      => $status,

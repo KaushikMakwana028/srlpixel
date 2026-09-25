@@ -82,6 +82,12 @@
             <span>Customers</span>
           </a>
         </li>
+        <li class="menu-item <?= (strpos($current_uri, 'admin/coupons') === 0) ? 'active' : '' ?>">
+          <a href="<?= base_url('admin/coupons') ?>" class="menu-link">
+            <i class="bi bi-ticket-perforated"></i>
+            <span>Coupons</span>
+          </a>
+        </li>
       </ul>
 
       <div class="sidebar-footer">

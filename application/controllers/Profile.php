@@ -31,23 +31,11 @@ class Profile extends CI_Controller {
             return;
         }
 
-        // Handle Profile Update POST (Profile Details + Optional Password Update)
+        // Handle Profile Update POST (Profile Details: Name, Email, Phone, Profile Image)
         if ($this->input->server('REQUEST_METHOD') === 'POST' && $this->input->post('action') === 'update_profile') {
             $this->form_validation->set_rules('name', 'Full Name', 'trim|required|min_length[3]|max_length[150]');
             $this->form_validation->set_rules('email', 'Email Address', 'trim|required|valid_email|max_length[150]');
-            $this->form_validation->set_rules('phone', 'Phone Number', 'trim|max_length[30]');
-
-            $current_password = $this->input->post('current_password');
-            $new_password     = $this->input->post('new_password');
-            $confirm_password = $this->input->post('confirm_password');
-
-            $is_changing_password = !empty($current_password) || !empty($new_password) || !empty($confirm_password);
-
-            if ($is_changing_password) {
-                $this->form_validation->set_rules('current_password', 'Current Password', 'required');
-                $this->form_validation->set_rules('new_password', 'New Password', 'required|min_length[6]');
-                $this->form_validation->set_rules('confirm_password', 'Confirm New Password', 'required|matches[new_password]');
-            }
+            $this->form_validation->set_rules('phone', 'Mobile Number', 'trim|max_length[30]');
 
             if ($this->form_validation->run() === TRUE) {
                 $name  = $this->input->post('name', TRUE);
@@ -59,15 +47,6 @@ class Profile extends CI_Controller {
                     $existing = $this->General_model->getOne('user', ['email' => $email, 'id !=' => $user_id]);
                     if ($existing) {
                         $this->session->set_flashdata('error', 'The email address ' . html_escape($email) . ' is already registered with another account.');
-                        redirect('profile?tab=profile');
-                        return;
-                    }
-                }
-
-                // If user is attempting to change password, verify current password first
-                if ($is_changing_password) {
-                    if (!password_verify($current_password, $user->password)) {
-                        $this->session->set_flashdata('error', 'The current password you entered is incorrect.');
                         redirect('profile?tab=profile');
                         return;
                     }
@@ -109,10 +88,6 @@ class Profile extends CI_Controller {
                     'updated_at'    => date('Y-m-d H:i:s')
                 ];
 
-                if ($is_changing_password) {
-                    $update_data['password'] = password_hash($new_password, PASSWORD_BCRYPT);
-                }
-
                 $this->General_model->update('user', ['id' => $user_id], $update_data);
 
                 // Update session info
@@ -122,8 +97,7 @@ class Profile extends CI_Controller {
                     'user_profile_image' => $profile_image
                 ]);
 
-                $success_msg = $is_changing_password ? 'Profile and password updated successfully!' : 'Profile updated successfully!';
-                $this->session->set_flashdata('success', $success_msg);
+                $this->session->set_flashdata('success', 'Profile updated successfully!');
                 redirect('profile?tab=profile');
                 return;
             } else {
@@ -220,6 +194,7 @@ class Profile extends CI_Controller {
         ];
 
         $insert_id = $this->General_model->insert('user_addresses', $address_data);
+        $this->General_model->sync_user_default_address($user_id);
 
         if ($this->input->is_ajax_request()) {
             $this->output->set_content_type('application/json')->set_output(json_encode([
@@ -282,6 +257,7 @@ class Profile extends CI_Controller {
                 ];
 
                 $this->General_model->update('user_addresses', ['id' => $address->id], $update_data);
+                $this->General_model->sync_user_default_address($user_id);
 
                 if ($this->input->is_ajax_request()) {
                     $this->output->set_content_type('application/json')->set_output(json_encode(['success' => true, 'message' => 'Address updated successfully!']));
@@ -328,6 +304,8 @@ class Profile extends CI_Controller {
                 }
             }
 
+            $this->General_model->sync_user_default_address($user_id);
+
             if ($this->input->is_ajax_request()) {
                 $this->output->set_content_type('application/json')->set_output(json_encode(['success' => true, 'message' => 'Address deleted successfully.']));
                 return;
@@ -358,6 +336,7 @@ class Profile extends CI_Controller {
             $this->General_model->update('user_addresses', ['user_id' => $user_id], ['is_default' => 0]);
             // Set this address as default
             $this->General_model->update('user_addresses', ['id' => $address->id], ['is_default' => 1]);
+            $this->General_model->sync_user_default_address($user_id);
 
             if ($this->input->is_ajax_request()) {
                 $this->output->set_content_type('application/json')->set_output(json_encode(['success' => true, 'message' => 'Default delivery address updated!']));

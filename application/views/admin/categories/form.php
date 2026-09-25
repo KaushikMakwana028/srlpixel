@@ -3,7 +3,7 @@
     <h4 class="fw-bold text-dark mb-1">
       <i class="bi bi-diagram-3-fill me-2" style="color: var(--srl-pink);"></i><?= $is_edit ? 'Edit Category' : 'Add New Category' ?>
     </h4>
-    <p class="text-muted small mb-0"><?= $is_edit ? 'Modify category naming, URL slug, and visual branding' : 'Create a new catalog category for pixel LED lighting products' ?></p>
+    <p class="text-muted small mb-0"><?= $is_edit ? 'Modify category naming and visual branding' : 'Create a new catalog category for pixel LED lighting products' ?></p>
   </div>
   <a href="<?= base_url('admin/categories') ?>" class="btn btn-outline-secondary rounded-pill px-3 py-2 btn-sm d-inline-flex align-items-center">
     <i class="bi bi-arrow-left me-1"></i>Back to Categories
@@ -29,14 +29,7 @@
           </div>
         </div>
 
-        <div class="mb-3">
-          <label for="catSlug" class="form-label fw-semibold text-secondary small">URL Slug</label>
-          <div class="auth-input-group mb-0">
-            <i class="bi bi-link-45deg input-icon"></i>
-            <input type="text" name="slug" id="catSlug" class="form-control bg-light text-dark" placeholder="pixel-led-strips" value="<?= set_value('slug', $category ? $category->slug : '') ?>">
-          </div>
-          <div class="form-text small text-muted mt-1">Unique URL identifier, e.g. <code>/category/<span id="slugPreviewText"><?= $category ? html_escape($category->slug) : 'category-slug' ?></span></code></div>
-        </div>
+
 
         <div class="mb-0">
           <label for="catDescription" class="form-label fw-semibold text-secondary small">Description</label>
@@ -143,29 +136,7 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-  const nameInput = document.getElementById('catName');
-  const slugInput = document.getElementById('catSlug');
-  const slugPreview = document.getElementById('slugPreviewText');
 
-  // Auto slugify category name
-  if (nameInput && slugInput) {
-    nameInput.addEventListener('input', function () {
-      if (<?= $is_edit ? 'false' : 'true' ?> || !slugInput.value) {
-        const slugVal = this.value
-          .toLowerCase()
-          .trim()
-          .replace(/[^\w\s-]/g, '')
-          .replace(/[\s_-]+/g, '-')
-          .replace(/^-+|-+$/g, '');
-        slugInput.value = slugVal;
-        if (slugPreview) slugPreview.textContent = slugVal || 'category-slug';
-      }
-    });
-
-    slugInput.addEventListener('input', function () {
-      if (slugPreview) slugPreview.textContent = this.value || 'category-slug';
-    });
-  }
 
   // Publish switch label update
   const statusSwitch = document.getElementById('statusSwitch');
