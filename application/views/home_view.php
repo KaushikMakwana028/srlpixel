@@ -952,10 +952,12 @@
             <div class="srl-trust-icon-wrap">
               <i class="bi bi-arrow-repeat"></i>
             </div>
-            <div class="srl-trust-content">
-              <h6 class="srl-trust-heading">EASY RETURNS</h6>
-              <p class="srl-trust-sub mb-0">7 days replacement guarantee & genuine warranty</p>
-            </div>
+          <div class="srl-trust-content">
+    <h6 class="srl-trust-heading">QUALITY ASSURED</h6>
+    <p class="srl-trust-sub mb-0">
+        Genuine products with trusted quality and warranty support
+    </p>
+</div>
           </div>
         </div>
       </div>

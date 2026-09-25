@@ -125,6 +125,11 @@ $route['category/(:any)'] = 'Category/view/$1';
 $route['products'] = 'Product/index';
 $route['product/(:num)'] = 'Product/detail/$1';
 $route['product/(:any)'] = 'Product/detail/$1';
+$route['login']       = 'login/index';
+$route['register']    = 'login/register';
+$route['verify-otp']  = 'login/verify_otp';
+$route['resend-otp']  = 'login/resend_otp';
+$route['logout']      = 'login/logout';
 
 // Customer Shopping Cart Routes
 $route['cart'] = 'Cart/index';

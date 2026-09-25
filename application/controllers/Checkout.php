@@ -1,7 +1,8 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-class Checkout extends CI_Controller {
+class Checkout extends CI_Controller
+{
 
     public function __construct()
     {
@@ -28,7 +29,7 @@ class Checkout extends CI_Controller {
     {
         $this->_require_login('checkout');
 
-        $user_id = (int)$this->session->userdata('user_id');
+        $user_id = (int) $this->session->userdata('user_id');
         $user = $this->General_model->getOne('user', ['id' => $user_id]);
 
         // Get user cart items
@@ -46,23 +47,23 @@ class Checkout extends CI_Controller {
 
         foreach ($db_cart as $item) {
             $product = $this->General_model->getOne('products', ['id' => $item->product_id, 'status' => 1]);
-            if ($product && (int)$product->stock > 0) {
+            if ($product && (int) $product->stock > 0) {
                 $unit_price = (!empty($product->discount_price) && $product->discount_price < $product->price)
-                    ? (float)$product->discount_price
-                    : (float)$product->price;
+                    ? (float) $product->discount_price
+                    : (float) $product->price;
 
-                $qty = min((int)$product->stock, max(1, (int)$item->quantity));
+                $qty = min((int) $product->stock, max(1, (int) $item->quantity));
                 $line_total = $unit_price * $qty;
 
                 $cart_items[] = [
-                    'cart_id'    => $item->id,
-                    'id'         => $product->id,
-                    'name'       => $product->name,
-                    'sku'        => $product->sku,
-                    'image'      => $product->image,
-                    'price'      => $unit_price,
-                    'stock'      => (int)$product->stock,
-                    'quantity'   => $qty,
+                    'cart_id' => $item->id,
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'sku' => $product->sku,
+                    'image' => $product->image,
+                    'price' => $unit_price,
+                    'stock' => (int) $product->stock,
+                    'quantity' => $qty,
                     'line_total' => $line_total
                 ];
 
@@ -97,17 +98,26 @@ class Checkout extends CI_Controller {
             }
         }
 
-        $data['title']           = 'Secure Checkout - SRL Pixel LED';
-        $data['user']            = $user;
-        $data['cart_items']      = $cart_items;
-        $data['subtotal']        = $subtotal;
-        $data['shipping']        = 0.00; // Free delivery
-        $data['total']           = $subtotal;
-        $data['total_quantity']  = $total_quantity;
-        $data['addresses']       = $addresses;
+        $data['title'] = 'Secure Checkout - SRL Pixel LED';
+        $data['user'] = $user;
+        $data['cart_items'] = $cart_items;
+        $data['subtotal'] = $subtotal;
+
+        // Calculate shipping based on order value
+        $shipping_fee = 0.00;
+        if ($subtotal < 20000) {
+            $shipping_fee = 200.00; // Or your desired shipping charge
+        }
+
+        $data['shipping'] = $shipping_fee;
+        $data['total'] = $subtotal + $shipping_fee;
+        $data['free_shipping_threshold'] = 20000;
+        $data['is_free_shipping'] = ($subtotal >= 20000);
+        $data['total_quantity'] = $total_quantity;
+        $data['addresses'] = $addresses;
         $data['default_address'] = $default_address;
         $data['razorpay_key_id'] = $this->config->item('razorpay_key_id') ?: (defined('RAZORPAY_KEY_ID') ? RAZORPAY_KEY_ID : '');
-        $data['currency']        = $this->config->item('razorpay_currency') ?: (defined('RAZORPAY_CURRENCY') ? RAZORPAY_CURRENCY : 'INR');
+        $data['currency'] = $this->config->item('razorpay_currency') ?: (defined('RAZORPAY_CURRENCY') ? RAZORPAY_CURRENCY : 'INR');
 
         $this->load->view('header', $data);
         $this->load->view('checkout_view', $data);
@@ -127,7 +137,7 @@ class Checkout extends CI_Controller {
             return;
         }
 
-        $user_id = (int)$this->session->userdata('user_id');
+        $user_id = (int) $this->session->userdata('user_id');
 
         $this->form_validation->set_rules('full_name', 'Full Name', 'trim|required|max_length[150]');
         $this->form_validation->set_rules('mobile', 'Mobile Number', 'trim|required|min_length[10]|max_length[15]');
@@ -158,19 +168,19 @@ class Checkout extends CI_Controller {
         }
 
         $address_data = [
-            'user_id'       => $user_id,
-            'full_name'     => $this->input->post('full_name', TRUE),
-            'mobile'        => $this->input->post('mobile', TRUE),
+            'user_id' => $user_id,
+            'full_name' => $this->input->post('full_name', TRUE),
+            'mobile' => $this->input->post('mobile', TRUE),
             'address_line1' => $this->input->post('address_line1', TRUE),
             'address_line2' => $this->input->post('address_line2', TRUE),
-            'landmark'      => $this->input->post('landmark', TRUE),
-            'city'          => $this->input->post('city', TRUE),
-            'state'         => $this->input->post('state', TRUE),
-            'pincode'       => $this->input->post('pincode', TRUE),
-            'country'       => $this->input->post('country', TRUE) ?: 'India',
-            'is_default'    => $is_default,
-            'created_at'    => date('Y-m-d H:i:s'),
-            'updated_at'    => date('Y-m-d H:i:s')
+            'landmark' => $this->input->post('landmark', TRUE),
+            'city' => $this->input->post('city', TRUE),
+            'state' => $this->input->post('state', TRUE),
+            'pincode' => $this->input->post('pincode', TRUE),
+            'country' => $this->input->post('country', TRUE) ?: 'India',
+            'is_default' => $is_default,
+            'created_at' => date('Y-m-d H:i:s'),
+            'updated_at' => date('Y-m-d H:i:s')
         ];
 
         $new_id = $this->General_model->insert('user_addresses', $address_data);
@@ -190,7 +200,7 @@ class Checkout extends CI_Controller {
     {
         $this->_require_login('checkout');
 
-        $user_id = (int)$this->session->userdata('user_id');
+        $user_id = (int) $this->session->userdata('user_id');
         $user = $this->General_model->getOne('user', ['id' => $user_id]);
 
         $db_cart = $this->General_model->getAll('cart', ['user_id' => $user_id]);
@@ -205,17 +215,17 @@ class Checkout extends CI_Controller {
         $subtotal = 0.00;
         foreach ($db_cart as $item) {
             $prod = $this->General_model->getOne('products', ['id' => $item->product_id, 'status' => 1]);
-            if ($prod && (int)$prod->stock > 0) {
+            if ($prod && (int) $prod->stock > 0) {
                 $price = (!empty($prod->discount_price) && $prod->discount_price < $prod->price)
-                    ? (float)$prod->discount_price
-                    : (float)$prod->price;
-                $subtotal += ($price * (int)$item->quantity);
+                    ? (float) $prod->discount_price
+                    : (float) $prod->price;
+                $subtotal += ($price * (int) $item->quantity);
             }
         }
 
         if ($subtotal <= 0) {
             $this->output->set_content_type('application/json')->set_output(json_encode([
-                'success' => false, 
+                'success' => false,
                 'message' => 'Invalid order total amount.'
             ]));
             return;
@@ -226,12 +236,12 @@ class Checkout extends CI_Controller {
 
         // Attempt real Razorpay API Order Creation if key/secret configured
         $razorpay_order_id = null;
-        $key_id       = $this->config->item('razorpay_key_id') ?: (defined('RAZORPAY_KEY_ID') ? RAZORPAY_KEY_ID : '');
-        $key_secret   = $this->config->item('razorpay_key_secret') ?: (defined('RAZORPAY_KEY_SECRET') ? RAZORPAY_KEY_SECRET : '');
-        $currency     = $this->config->item('razorpay_currency') ?: (defined('RAZORPAY_CURRENCY') ? RAZORPAY_CURRENCY : 'INR');
+        $key_id = $this->config->item('razorpay_key_id') ?: (defined('RAZORPAY_KEY_ID') ? RAZORPAY_KEY_ID : '');
+        $key_secret = $this->config->item('razorpay_key_secret') ?: (defined('RAZORPAY_KEY_SECRET') ? RAZORPAY_KEY_SECRET : '');
+        $currency = $this->config->item('razorpay_currency') ?: (defined('RAZORPAY_CURRENCY') ? RAZORPAY_CURRENCY : 'INR');
         $company_name = $this->config->item('razorpay_company_name') ?: (defined('RAZORPAY_COMPANY_NAME') ? RAZORPAY_COMPANY_NAME : "VISION TECHNOLABS");
-        $logo_url     = $this->config->item('razorpay_logo_url') ?: base_url('assets/images/new_logo.png');
-        $theme_color  = $this->config->item('razorpay_theme_color') ?: (defined('RAZORPAY_THEME_COLOR') ? RAZORPAY_THEME_COLOR : '#2563eb');
+        $logo_url = $this->config->item('razorpay_logo_url') ?: base_url('assets/images/new_logo.png');
+        $theme_color = $this->config->item('razorpay_theme_color') ?: (defined('RAZORPAY_THEME_COLOR') ? RAZORPAY_THEME_COLOR : '#2563eb');
 
         if (!empty($key_id) && !empty($key_secret) && strpos($key_id, 'sample') === false && function_exists('curl_init')) {
             $ch = curl_init('https://api.razorpay.com/v1/orders');
@@ -239,11 +249,11 @@ class Checkout extends CI_Controller {
             curl_setopt($ch, CURLOPT_USERPWD, $key_id . ':' . $key_secret);
             curl_setopt($ch, CURLOPT_POST, true);
             curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
-                'amount'   => $amount_in_paise,
+                'amount' => $amount_in_paise,
                 'currency' => $currency,
-                'receipt'  => $receipt,
-                'notes'    => [
-                    'customer_id'   => $user_id,
+                'receipt' => $receipt,
+                'notes' => [
+                    'customer_id' => $user_id,
                     'customer_name' => $user ? $user->name : 'Customer'
                 ]
             ]));
@@ -262,18 +272,18 @@ class Checkout extends CI_Controller {
 
         // Return order setup configuration to client
         $this->output->set_content_type('application/json')->set_output(json_encode([
-            'success'           => true,
-            'key_id'            => $key_id,
-            'amount'            => $amount_in_paise,
-            'currency'          => $currency,
-            'company_name'      => $company_name,
-            'logo_url'          => $logo_url,
-            'theme_color'       => $theme_color,
+            'success' => true,
+            'key_id' => $key_id,
+            'amount' => $amount_in_paise,
+            'currency' => $currency,
+            'company_name' => $company_name,
+            'logo_url' => $logo_url,
+            'theme_color' => $theme_color,
             'razorpay_order_id' => $razorpay_order_id,
-            'receipt'           => $receipt,
-            'customer_name'     => $user ? $user->name : 'Valued Customer',
-            'customer_email'    => $user ? $user->email : '',
-            'customer_phone'    => $user ? $user->phone : ''
+            'receipt' => $receipt,
+            'customer_name' => $user ? $user->name : 'Valued Customer',
+            'customer_email' => $user ? $user->email : '',
+            'customer_phone' => $user ? $user->phone : ''
         ]));
     }
 
@@ -284,7 +294,7 @@ class Checkout extends CI_Controller {
     {
         $this->_require_login('checkout');
 
-        $user_id = (int)$this->session->userdata('user_id');
+        $user_id = (int) $this->session->userdata('user_id');
         $cart = $this->General_model->getAll('cart', ['user_id' => $user_id]);
 
         if (empty($cart)) {
@@ -301,7 +311,7 @@ class Checkout extends CI_Controller {
         }
 
         // Validate delivery address
-        $address_id = (int)$this->input->post('address_id');
+        $address_id = (int) $this->input->post('address_id');
         $address = null;
 
         if (!empty($address_id)) {
@@ -337,30 +347,30 @@ class Checkout extends CI_Controller {
         foreach ($cart as $item) {
             $product = $this->General_model->getOne('products', ['id' => $item->product_id, 'status' => 1]);
             if ($product) {
-                $qty = (int)$item->quantity;
-                if ($qty > (int)$product->stock) {
-                    $qty = (int)$product->stock;
+                $qty = (int) $item->quantity;
+                if ($qty > (int) $product->stock) {
+                    $qty = (int) $product->stock;
                 }
                 if ($qty <= 0) {
                     continue; // Skip out of stock
                 }
 
                 $price = (!empty($product->discount_price) && $product->discount_price < $product->price)
-                    ? (float)$product->discount_price
-                    : (float)$product->price;
+                    ? (float) $product->discount_price
+                    : (float) $product->price;
 
                 $line_total = $price * $qty;
                 $subtotal += $line_total;
 
                 $order_items_data[] = [
-                    'product_id'    => $product->id,
-                    'product_name'  => $product->name,
+                    'product_id' => $product->id,
+                    'product_name' => $product->name,
                     'product_image' => $product->image,
-                    'sku'           => $product->sku,
-                    'unit_price'    => $price,
-                    'quantity'      => $qty,
-                    'line_total'    => $line_total,
-                    'current_stock' => (int)$product->stock
+                    'sku' => $product->sku,
+                    'unit_price' => $price,
+                    'quantity' => $qty,
+                    'line_total' => $line_total,
+                    'current_stock' => (int) $product->stock
                 ];
             }
         }
@@ -378,49 +388,54 @@ class Checkout extends CI_Controller {
             return;
         }
 
-        $payment_method     = trim($this->input->post('payment_method') ?: 'Cash on Delivery');
-        $razorpay_order_id  = trim($this->input->post('razorpay_order_id') ?? '');
-        $razorpay_payment_id= trim($this->input->post('razorpay_payment_id') ?? '');
-        $order_notes        = $this->input->post('order_notes', TRUE);
+        $payment_method = trim($this->input->post('payment_method') ?: 'Cash on Delivery');
+        $razorpay_order_id = trim($this->input->post('razorpay_order_id') ?? '');
+        $razorpay_payment_id = trim($this->input->post('razorpay_payment_id') ?? '');
+        $order_notes = $this->input->post('order_notes', TRUE);
 
         // Determine initial payment status and order status
         $payment_status = 'Pending';
-        $order_status   = 'Placed';
+        $order_status = 'Placed';
 
         if ($payment_method === 'Razorpay' || !empty($razorpay_payment_id)) {
             $payment_status = 'Paid';
-            $order_status   = 'Confirmed';
+            $order_status = 'Confirmed';
         }
 
         // Unique order number
         $order_number = 'SRL-' . date('Ymd') . '-' . strtoupper(substr(uniqid(), -5));
+        $shipping_fee = 0.00;
+        if ($subtotal < 20000) {
+            $shipping_fee = 200.00; // Your shipping charge
+        }
+        $total_amount = $subtotal + $shipping_fee;
 
         // Create Order Record
         $order_data = [
-            'order_number'           => $order_number,
-            'order_type'             => 'online',
-            'user_id'                => $user_id,
-            'address_id'             => $address->id,
-            'shipping_full_name'     => $address->full_name,
-            'shipping_mobile'        => $address->mobile,
+            'order_number' => $order_number,
+            'order_type' => 'online',
+            'user_id' => $user_id,
+            'address_id' => $address->id,
+            'shipping_full_name' => $address->full_name,
+            'shipping_mobile' => $address->mobile,
             'shipping_address_line1' => $address->address_line1,
             'shipping_address_line2' => $address->address_line2,
-            'shipping_landmark'      => $address->landmark,
-            'shipping_city'          => $address->city,
-            'shipping_state'         => $address->state,
-            'shipping_pincode'       => $address->pincode,
-            'shipping_country'       => $address->country ?: 'India',
-            'subtotal'               => $subtotal,
-            'shipping_fee'           => 0.00,
-            'total_amount'           => $subtotal,
-            'payment_method'         => $payment_method,
-            'payment_status'         => $payment_status,
-            'order_status'           => $order_status,
-            'razorpay_order_id'      => $razorpay_order_id ?: null,
-            'razorpay_payment_id'    => $razorpay_payment_id ?: null,
-            'notes'                  => $order_notes ?: null,
-            'created_at'             => date('Y-m-d H:i:s'),
-            'updated_at'             => date('Y-m-d H:i:s')
+            'shipping_landmark' => $address->landmark,
+            'shipping_city' => $address->city,
+            'shipping_state' => $address->state,
+            'shipping_pincode' => $address->pincode,
+            'shipping_country' => $address->country ?: 'India',
+            'subtotal' => $subtotal,
+            'shipping_fee' => $shipping_fee,
+            'total_amount' => $total_amount,
+            'payment_method' => $payment_method,
+            'payment_status' => $payment_status,
+            'order_status' => $order_status,
+            'razorpay_order_id' => $razorpay_order_id ?: null,
+            'razorpay_payment_id' => $razorpay_payment_id ?: null,
+            'notes' => $order_notes ?: null,
+            'created_at' => date('Y-m-d H:i:s'),
+            'updated_at' => date('Y-m-d H:i:s')
         ];
 
         $order_id = $this->General_model->insert('orders', $order_data);
@@ -428,21 +443,21 @@ class Checkout extends CI_Controller {
         // Insert Order Items and Automatically Deduct Stock from Products
         foreach ($order_items_data as $oi) {
             $this->General_model->insert('order_items', [
-                'order_id'      => $order_id,
-                'product_id'    => $oi['product_id'],
-                'product_name'  => $oi['product_name'],
+                'order_id' => $order_id,
+                'product_id' => $oi['product_id'],
+                'product_name' => $oi['product_name'],
                 'product_image' => $oi['product_image'],
-                'sku'           => $oi['sku'],
-                'unit_price'    => $oi['unit_price'],
-                'quantity'      => $oi['quantity'],
-                'line_total'    => $oi['line_total'],
-                'created_at'    => date('Y-m-d H:i:s')
+                'sku' => $oi['sku'],
+                'unit_price' => $oi['unit_price'],
+                'quantity' => $oi['quantity'],
+                'line_total' => $oi['line_total'],
+                'created_at' => date('Y-m-d H:i:s')
             ]);
 
             // Deduct stock
             $new_stock = max(0, $oi['current_stock'] - $oi['quantity']);
             $this->General_model->update('products', ['id' => $oi['product_id']], [
-                'stock'      => $new_stock,
+                'stock' => $new_stock,
                 'updated_at' => date('Y-m-d H:i:s')
             ]);
         }
@@ -452,8 +467,8 @@ class Checkout extends CI_Controller {
 
         if ($this->input->is_ajax_request()) {
             $this->output->set_content_type('application/json')->set_output(json_encode([
-                'success'      => true,
-                'order_id'     => $order_id,
+                'success' => true,
+                'order_id' => $order_id,
                 'order_number' => $order_number,
                 'redirect_url' => base_url('order/success/' . $order_id)
             ]));
@@ -472,10 +487,10 @@ class Checkout extends CI_Controller {
         $this->_require_login('checkout');
 
         $razorpay_payment_id = trim($this->input->post('razorpay_payment_id') ?? '');
-        $razorpay_order_id   = trim($this->input->post('razorpay_order_id') ?? '');
-        $razorpay_signature  = trim($this->input->post('razorpay_signature') ?? '');
-        $address_id          = (int)$this->input->post('address_id');
-        $order_notes         = $this->input->post('order_notes', TRUE);
+        $razorpay_order_id = trim($this->input->post('razorpay_order_id') ?? '');
+        $razorpay_signature = trim($this->input->post('razorpay_signature') ?? '');
+        $address_id = (int) $this->input->post('address_id');
+        $order_notes = $this->input->post('order_notes', TRUE);
 
         if (empty($razorpay_payment_id)) {
             $this->output->set_content_type('application/json')->set_output(json_encode([
@@ -486,11 +501,11 @@ class Checkout extends CI_Controller {
         }
 
         // Forward to place_order with Razorpay details
-        $_POST['payment_method']      = 'Razorpay';
+        $_POST['payment_method'] = 'Razorpay';
         $_POST['razorpay_payment_id'] = $razorpay_payment_id;
-        $_POST['razorpay_order_id']   = $razorpay_order_id;
-        $_POST['address_id']          = $address_id;
-        $_POST['order_notes']         = $order_notes;
+        $_POST['razorpay_order_id'] = $razorpay_order_id;
+        $_POST['address_id'] = $address_id;
+        $_POST['order_notes'] = $order_notes;
 
         $this->place_order();
     }
@@ -502,8 +517,8 @@ class Checkout extends CI_Controller {
     {
         $this->_require_login();
 
-        $user_id = (int)$this->session->userdata('user_id');
-        $order = $this->General_model->getOne('orders', ['id' => (int)$order_id, 'user_id' => $user_id]);
+        $user_id = (int) $this->session->userdata('user_id');
+        $order = $this->General_model->getOne('orders', ['id' => (int) $order_id, 'user_id' => $user_id]);
 
         if (!$order) {
             $this->session->set_flashdata('error', 'Order not found.');
@@ -514,9 +529,9 @@ class Checkout extends CI_Controller {
         $items = $this->General_model->getAll('order_items', ['order_id' => $order->id]);
         $customer = $this->General_model->getOne('user', ['id' => $user_id]);
 
-        $data['title']    = 'Order Confirmation #' . $order->order_number . ' - SRL Pixel';
-        $data['order']    = $order;
-        $data['items']    = $items;
+        $data['title'] = 'Order Confirmation #' . $order->order_number . ' - SRL Pixel';
+        $data['order'] = $order;
+        $data['items'] = $items;
         $data['customer'] = $customer;
 
         $this->load->view('header', $data);
@@ -530,7 +545,7 @@ class Checkout extends CI_Controller {
     public function invoice($order_id = NULL)
     {
         $is_customer = ($this->session->userdata('user_logged_in') && $this->session->userdata('user_role') == 0);
-        $is_admin    = ($this->session->userdata('admin_logged_in') && $this->session->userdata('admin_role') == 1);
+        $is_admin = ($this->session->userdata('admin_logged_in') && $this->session->userdata('admin_role') == 1);
 
         if (!$is_customer && !$is_admin) {
             $this->session->set_flashdata('error', 'Authentication required to view invoice.');
@@ -538,9 +553,9 @@ class Checkout extends CI_Controller {
             return;
         }
 
-        $where = ['id' => (int)$order_id];
+        $where = ['id' => (int) $order_id];
         if (!$is_admin) {
-            $where['user_id'] = (int)$this->session->userdata('user_id');
+            $where['user_id'] = (int) $this->session->userdata('user_id');
         }
 
         $order = $this->General_model->getOne('orders', $where);
@@ -553,11 +568,11 @@ class Checkout extends CI_Controller {
         $items = $this->General_model->getAll('order_items', ['order_id' => $order->id]);
         $customer = $this->General_model->getOne('user', ['id' => $order->user_id]);
 
-        $data['order']    = $order;
-        $data['items']    = $items;
+        $data['order'] = $order;
+        $data['items'] = $items;
         $data['customer'] = $customer;
         $data['is_admin'] = $is_admin;
-        $data['title']    = 'Tax Invoice #' . $order->order_number . ' - SRL Pixel';
+        $data['title'] = 'Tax Invoice #' . $order->order_number . ' - SRL Pixel';
 
         $this->load->view('invoice_view', $data);
     }

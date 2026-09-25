@@ -1,8 +1,4 @@
 <style>
-/* ============================================================
-   AUTH PAGES STYLING (LOGIN)
-   ============================================================ */
-
 .auth-top-nav {
   width: 100%;
   max-width: 460px;
@@ -25,7 +21,6 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   transition: all 0.22s ease;
   backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
 }
 
 .auth-back-link:hover {
@@ -40,7 +35,6 @@
   max-width: 460px;
   background: rgba(18, 22, 33, 0.88);
   backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
   border-radius: 24px;
   border: 1px solid rgba(255, 42, 133, 0.22);
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), 0 0 40px rgba(255, 42, 133, 0.08);
@@ -70,7 +64,20 @@
   width: auto;
   margin-bottom: 14px;
   filter: drop-shadow(0 2px 12px rgba(255, 42, 133, 0.25));
-  transition: transform 0.3s ease;
+}
+
+.auth-icon-badge {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background: var(--srl-pink-gradient);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 18px;
+  box-shadow: 0 8px 28px rgba(255, 42, 133, 0.42), 0 0 0 6px rgba(255, 42, 133, 0.08);
+  font-size: 1.9rem;
+  color: #ffffff;
 }
 
 .auth-title {
@@ -98,7 +105,7 @@
 
 .auth-input-group {
   position: relative;
-  margin-bottom: 18px;
+  margin-bottom: 8px;
 }
 
 .auth-input-group .input-icon {
@@ -109,7 +116,6 @@
   color: #64748b;
   font-size: 1.05rem;
   pointer-events: none;
-  transition: color 0.2s ease;
 }
 
 .auth-input-group .form-control {
@@ -118,7 +124,7 @@
   color: #ffffff !important;
   padding: 12px 14px 12px 42px;
   border-radius: 12px;
-  font-size: 0.92rem;
+  font-size: 0.95rem;
   transition: all 0.22s ease;
 }
 
@@ -138,75 +144,11 @@
   opacity: 1 !important;
 }
 
-.auth-input-group .password-toggle {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #64748b;
-  cursor: pointer;
-  background: transparent;
-  border: none;
-  padding: 4px 8px;
-  font-size: 1rem;
-  transition: color 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.auth-input-group .password-toggle:hover {
-  color: var(--srl-pink-glow);
-}
-
-.auth-options-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 22px;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.auth-remember-check {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-}
-
-.auth-remember-check input[type="checkbox"] {
-  width: 17px;
-  height: 17px;
-  border-radius: 4px;
-  background-color: rgba(255, 255, 255, 0.08);
-  border: 1.5px solid rgba(255, 255, 255, 0.25);
-  accent-color: var(--srl-pink);
-  cursor: pointer;
-  margin: 0;
-}
-
-.auth-remember-check label {
-  color: #e2e8f0 !important;
-  font-size: 0.85rem;
-  font-weight: 500;
-  cursor: pointer;
-  user-select: none;
-  margin: 0;
-}
-
-.auth-forgot-link {
-  color: var(--srl-pink-glow);
-  font-size: 0.85rem;
-  font-weight: 600;
-  text-decoration: none;
-  transition: all 0.2s ease;
-}
-
-.auth-forgot-link:hover {
-  color: #ffffff;
-  text-shadow: 0 0 8px rgba(255, 42, 133, 0.7);
-  text-decoration: underline;
+.auth-hint {
+  font-size: 0.76rem;
+  color: #94a3b8;
+  margin: 0 0 22px 2px;
+  display: block;
 }
 
 .auth-btn-submit {
@@ -245,25 +187,47 @@
   color: var(--srl-pink-glow) !important;
   font-weight: 700;
   text-decoration: none;
-  transition: all 0.2s ease;
 }
 
 .auth-switch-link:hover {
   text-decoration: underline;
 }
 
+.auth-security-badges {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  flex-wrap: wrap;
+}
+
+.auth-security-badges .badge-item {
+  font-size: 0.76rem;
+  color: #64748b;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.auth-security-badges .badge-item i {
+  color: var(--srl-pink);
+  font-size: 0.85rem;
+}
+
+.auth-security-badges .badge-dot {
+  color: #334155;
+  font-size: 0.75rem;
+}
+
 @media (max-width: 575.98px) {
-  .auth-card {
-    padding: 28px 20px;
-    border-radius: 20px;
-  }
-  .auth-title {
-    font-size: 1.32rem;
-  }
+  .auth-card { padding: 28px 20px; border-radius: 20px; }
+  .auth-title { font-size: 1.32rem; }
 }
 </style>
 
-<!-- Floating Back to Store Link -->
 <div class="auth-top-nav mb-3">
   <a href="<?= base_url() ?>" class="auth-back-link">
     <i class="bi bi-arrow-left"></i>
@@ -272,60 +236,40 @@
 </div>
 
 <div class="auth-card">
-  <!-- Brand Logo & Header -->
   <div class="auth-logo-header">
     <a href="<?= base_url() ?>" class="d-inline-block">
       <img src="<?= base_url('assets/images/new_logo.png') ?>" alt="SRL Pixel Logo" onerror="this.onerror=null; this.src='<?= base_url('assets/images/logo.png') ?>';">
     </a>
-    <h4 class="auth-title">Customer Sign In</h4>
-    <p class="auth-subtitle">Sign in to manage your orders & pixel projects</p>
+  </div>
+
+  <div class="auth-icon-badge">
+    <i class="bi bi-shield-lock-fill"></i>
+  </div>
+
+  <div class="text-center mb-4">
+    <h4 class="auth-title">Sign In with OTP</h4>
+    <p class="auth-subtitle">Enter your registered mobile number to receive a One-Time Password</p>
   </div>
 
   <?= form_open('login') ?>
-    <!-- Email Address -->
-    <div class="mb-3">
-      <label for="userEmail" class="auth-form-label">Email Address</label>
-      <div class="auth-input-group">
-        <i class="bi bi-envelope-fill input-icon"></i>
-        <input type="email" name="email" id="userEmail" class="form-control" placeholder="user@srlpixel.com" value="<?= set_value('email') ?>" required autofocus autocomplete="email">
-      </div>
+    <label for="userPhone" class="auth-form-label">Mobile Number</label>
+    <div class="auth-input-group">
+      <i class="bi bi-telephone-fill input-icon"></i>
+      <input type="tel" name="phone" id="userPhone" class="form-control" placeholder="Enter 10-digit mobile number" maxlength="15" value="<?= set_value('phone') ?>" required autofocus autocomplete="tel">
     </div>
+    <small class="auth-hint"><i class="bi bi-info-circle me-1"></i>We'll send a 6-digit OTP via SMS to verify it's you</small>
 
-    <!-- Password -->
-    <div class="mb-3">
-      <label for="userPassword" class="auth-form-label">Password</label>
-      <div class="auth-input-group">
-        <i class="bi bi-lock-fill input-icon"></i>
-        <input type="password" name="password" id="userPassword" class="form-control" placeholder="Enter your password" required autocomplete="current-password">
-        <button type="button" class="password-toggle" data-target="userPassword" aria-label="Toggle password visibility" title="Show/hide password">
-          <i class="bi bi-eye"></i>
-        </button>
-      </div>
-    </div>
-
-    <!-- High-Contrast Remember Me & Forgot Password -->
-    <div class="auth-options-row">
-      <div class="auth-remember-check">
-        <input type="checkbox" name="remember" id="rememberUser">
-        <label for="rememberUser">Remember me</label>
-      </div>
-      <a href="#" class="auth-forgot-link">Forgot Password?</a>
-    </div>
-
-    <!-- Primary Sign In Button -->
     <button type="submit" class="auth-btn-submit">
-      <i class="bi bi-box-arrow-in-right"></i>
-      <span>Sign In</span>
+      <i class="bi bi-send-fill"></i>
+      <span>Send OTP</span>
     </button>
   <?= form_close() ?>
 
-  <!-- Register Link -->
   <div class="auth-footer-text">
-    <span>Don't have an account?</span> 
+    <span>Don't have an account?</span>
     <a href="<?= base_url('register') ?>" class="auth-switch-link ms-1">Create Account</a>
   </div>
 
-  <!-- Trust & Security Badges -->
   <div class="auth-security-badges">
     <span class="badge-item"><i class="bi bi-shield-check"></i> 256-Bit Encrypted</span>
     <span class="badge-dot">&bull;</span>

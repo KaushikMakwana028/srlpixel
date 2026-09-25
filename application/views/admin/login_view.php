@@ -208,9 +208,9 @@
     </button>
   <?= form_close() ?>
 
-  <div class="auth-footer-text">
+  <!-- <div class="auth-footer-text">
     Need to register an administrator account? <a href="<?= base_url('admin/register') ?>">Create Admin Account</a>
-  </div>
+  </div> -->
   <div class="auth-footer-text mt-2">
     <a href="<?= base_url('login') ?>" class="text-secondary" style="font-size: 0.82rem;"><i class="bi bi-arrow-left me-1"></i>Go to Customer Portal</a>
   </div>

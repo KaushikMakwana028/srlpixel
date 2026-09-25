@@ -83,29 +83,50 @@
 
   <?php if (!empty($cart_items)): ?>
     <!-- Sleek Free Delivery Alert -->
-    <div class="d-flex align-items-center justify-content-between p-2 p-sm-3 mb-4 rounded-3 border flex-wrap gap-2" style="background: #f8fafc; border-color: rgba(225, 29, 116, 0.22) !important;">
-      <div class="d-flex align-items-center gap-2">
-        <span class="rounded-circle d-inline-flex align-items-center justify-content-center text-white flex-shrink-0" style="width: 32px; height: 32px; background: var(--srl-pink-gradient); box-shadow: 0 2px 8px rgba(225, 29, 116, 0.35);">
-          <i class="bi bi-truck" style="font-size: 0.9rem;"></i>
+  <!-- Shipping Alert - Dynamic based on order value -->
+<?php if ($is_free_shipping): ?>
+<div class="d-flex align-items-center justify-content-between p-2 p-sm-3 mb-4 rounded-3 border flex-wrap gap-2" style="background: linear-gradient(135deg, #d4f4dd 0%, #e8f8ed 100%);">
+    <div class="d-flex align-items-center gap-2">
+        <span class="rounded-circle d-inline-flex align-items-center justify-content-center text-white flex-shrink-0" style="width: 32px; height: 32px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35);">
+            <i class="bi bi-check-circle-fill" style="font-size: 0.9rem;"></i>
         </span>
         <span class="small fw-semibold text-dark">
-          <strong style="color: var(--srl-pink);">Free Express Delivery:</strong> All orders dispatched within 24 hours with ₹0 shipping fee across India.
+            <strong style="color: #059669;">Congratulations!</strong> You qualify for FREE Pan India delivery. Dispatch within 24 hours.
         </span>
-      </div>
-      <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-2 py-1" style="font-size: 0.72rem;">
-        <i class="bi bi-check-circle-fill me-1"></i>Free Shipping
-      </span>
     </div>
+    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-2 py-1" style="font-size: 0.72rem;">
+        <i class="bi bi-truck me-1"></i>Free Shipping
+    </span>
+</div>
+<?php else: ?>
+<?php 
+$remaining = 20000 - $subtotal;
+$progress = ($subtotal / 20000) * 100;
+?>
+<div class="d-flex align-items-center justify-content-between p-2 p-sm-3 mb-4 rounded-3 border flex-wrap gap-2" style="background: linear-gradient(135deg, #fef3c7 0%, #fef9e7 100%);">
+    <div class="d-flex align-items-center gap-2">
+        <span class="rounded-circle d-inline-flex align-items-center justify-content-center text-white flex-shrink-0" style="width: 32px; height: 32px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); box-shadow: 0 2px 8px rgba(245, 158, 11, 0.35);">
+            <i class="bi bi-gift" style="font-size: 0.9rem;"></i>
+        </span>
+        <span class="small fw-semibold text-dark">
+            Add <strong style="color: #d97706;">₹<?= number_format($remaining, 2) ?></strong> more to get <strong>FREE Pan India delivery!</strong>
+        </span>
+    </div>
+    <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 rounded-pill px-2 py-1" style="font-size: 0.72rem;">
+        <i class="bi bi-truck me-1"></i>₹<?= number_format($shipping, 2) ?>
+    </span>
+</div>
+<?php endif; ?>
 
     <div class="row g-4" id="cartContentRow">
       <!-- Left Column: Cart Items List -->
       <div class="col-lg-8">
         <!-- Desktop / Tablet Table View (>= 768px) -->
         <div class="card border-0 shadow-sm rounded-4 overflow-hidden d-none d-md-block" style="border: 1px solid #e2e8f0 !important; background: #ffffff;">
-          <div class="card-header bg-white border-bottom py-3 px-4 d-flex justify-content-between align-items-center">
-            <span class="fw-bold text-dark">Item Details</span>
-            <span class="text-muted small">Standard GST Included</span>
-          </div>
+         <div class="card-header bg-white border-bottom py-3 px-4 d-flex justify-content-between align-items-center">
+    <span class="fw-bold text-dark">Item Details</span>
+    <!-- GST text removed -->
+</div>
 
           <div class="table-responsive">
             <table class="table align-middle mb-0" id="cartTable">
@@ -276,16 +297,38 @@
           </div>
 
           <!-- Delivery Charge -->
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <span class="text-muted">Delivery Charges</span>
+        <!-- Delivery Charge -->
+<div class="d-flex justify-content-between align-items-center mb-2">
+    <span class="text-muted">Delivery Charges</span>
+    <span id="cartSummaryShipping">
+        <?php if ($is_free_shipping): ?>
             <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">FREE</span>
-          </div>
+        <?php else: ?>
+            <span class="fw-bold text-dark">₹<?= number_format($shipping, 2) ?></span>
+        <?php endif; ?>
+    </span>
+</div>
+<?php if (!$is_free_shipping): ?>
+<!-- Free Shipping Progress Bar -->
+<div class="mb-3 p-2 rounded-3 bg-light border">
+    <?php 
+    $remaining = 20000 - $subtotal;
+    $progress = min(100, ($subtotal / 20000) * 100);
+    ?>
+    <small class="text-muted d-block mb-1">
+        <i class="bi bi-info-circle me-1"></i>Add ₹<?= number_format($remaining, 2) ?> more for FREE shipping!
+    </small>
+    <div class="progress" style="height: 6px;">
+        <div class="progress-bar bg-success" role="progressbar" style="width: <?= $progress ?>%"></div>
+    </div>
+</div>
+<?php endif; ?>
 
           <!-- Taxes -->
-          <div class="d-flex justify-content-between align-items-center mb-3">
+          <!-- <div class="d-flex justify-content-between align-items-center mb-3">
             <span class="text-muted">Estimated GST</span>
             <span class="text-muted small">Included in price</span>
-          </div>
+          </div> -->
 
           <!-- Promo Code Input Group -->
           <div class="mb-3">
@@ -324,10 +367,14 @@
 
           <!-- Store Guarantees / Badges -->
           <div class="rounded-3 p-3 bg-light text-muted small border">
-            <div class="d-flex align-items-center gap-2 mb-2">
-              <i class="bi bi-truck text-danger fs-5" style="color: var(--srl-pink) !important;"></i>
-              <span class="text-dark"><strong>Free Delivery</strong> on all orders across India</span>
-            </div>
+           <div class="d-flex align-items-center gap-2 mb-2">
+    <i class="bi bi-truck text-danger fs-5" style="color: var(--srl-pink) !important;"></i>
+    <span class="text-dark"><strong>Pan India Delivery</strong> (Free above ₹20,000)</span>
+</div>
+<div class="d-flex align-items-center gap-2 mb-2">
+    <i class="bi bi-globe text-info fs-5"></i>
+    <span class="text-dark"><strong>International Delivery</strong> available</span>
+</div>
             <div class="d-flex align-items-center gap-2 mb-2">
               <i class="bi bi-cash-stack text-success fs-5"></i>
               <span class="text-dark"><strong>Cash on Delivery</strong> available</span>
@@ -336,10 +383,10 @@
               <i class="bi bi-credit-card-2-front text-primary fs-5"></i>
               <span class="text-dark"><strong>Razorpay Online Payment</strong> (UPI, Cards, NetBanking)</span>
             </div>
-            <div class="d-flex align-items-center gap-2">
+            <!-- <div class="d-flex align-items-center gap-2">
               <i class="bi bi-arrow-repeat text-warning fs-5"></i>
               <span class="text-dark"><strong>7-Day Replacement</strong> guarantee</span>
-            </div>
+            </div> -->
           </div>
         </div>
       </div>
@@ -422,7 +469,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
           if (subtotal) subtotal.innerText = '₹' + data.subtotal;
           if (total) total.innerText = '₹' + data.total;
-
+const shippingElement = document.getElementById('cartSummaryShipping');
+if (shippingElement) {
+    if (data.is_free_shipping) {
+        shippingElement.innerHTML = '<span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">FREE</span>';
+    } else {
+        shippingElement.innerHTML = '<span class="fw-bold text-dark">₹' + data.shipping + '</span>';
+    }
+}
           updateHeaderBadge(data.cart_count);
         } else if (data.require_login) {
           window.location.href = data.login_url;

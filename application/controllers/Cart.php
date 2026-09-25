@@ -77,9 +77,18 @@ class Cart extends CI_Controller {
         $data['default_address'] = $default_address;
         $data['title'] = 'Shopping Cart (' . $total_quantity . ' items) - SRL Pixel';
         $data['cart_items'] = $cart_items;
-        $data['subtotal'] = $subtotal;
-        $data['shipping'] = 0.00; // Free Delivery
-        $data['total'] = $subtotal;
+       $data['subtotal'] = $subtotal;
+
+// Calculate shipping based on order value
+$shipping_fee = 0.00;
+if ($subtotal < 20000) {
+    $shipping_fee = 200.00; // Or your desired shipping charge
+}
+
+$data['shipping'] = $shipping_fee;
+$data['total'] = $subtotal + $shipping_fee;
+$data['free_shipping_threshold'] = 20000;
+$data['is_free_shipping'] = ($subtotal >= 20000);
         $data['total_quantity'] = $total_quantity;
 
         $this->load->view('header', $data);
@@ -242,16 +251,27 @@ class Cart extends CI_Controller {
             }
         }
 
-        $this->output
-            ->set_content_type('application/json')
-            ->set_output(json_encode([
-                'success'     => true,
-                'cart_count'  => $cart_count,
-                'item_total'  => number_format($item_total, 2),
-                'subtotal'    => number_format($subtotal, 2),
-                'total'       => number_format($subtotal, 2),
-                'is_empty'    => empty($remaining_items)
-            ]));
+       // Calculate shipping
+$shipping_fee = 0.00;
+if ($subtotal < 20000) {
+    $shipping_fee = 200.00;
+}
+$total = $subtotal + $shipping_fee;
+$is_free_shipping = ($subtotal >= 20000);
+
+$this->output
+    ->set_content_type('application/json')
+    ->set_output(json_encode([
+        'success' => true,
+        'cart_count' => $cart_count,
+        'item_total' => number_format($item_total, 2),
+        'subtotal' => number_format($subtotal, 2),
+        'shipping' => number_format($shipping_fee, 2),
+        'total' => number_format($total, 2),
+        'is_free_shipping' => $is_free_shipping,
+        'free_shipping_threshold' => 20000,
+        'is_empty' => empty($remaining_items)
+    ]));
     }
 
     /**

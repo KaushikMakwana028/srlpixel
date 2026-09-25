@@ -549,15 +549,19 @@
           <strong class="text-dark">₹<?= number_format($subtotal, 2) ?></strong>
         </div>
 
-        <div class="d-flex justify-content-between align-items-center mb-2 small">
-          <span class="text-secondary">Delivery Charges</span>
-          <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">FREE</span>
-        </div>
+       <div class="d-flex justify-content-between align-items-center mb-2 small">
+    <span class="text-secondary">Delivery Charges</span>
+    <?php if ($is_free_shipping): ?>
+        <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">FREE</span>
+    <?php else: ?>
+        <strong class="text-dark">₹<?= number_format($shipping, 2) ?></strong>
+    <?php endif; ?>
+</div>
 
-        <div class="d-flex justify-content-between align-items-center mb-3 small">
+        <!-- <div class="d-flex justify-content-between align-items-center mb-3 small">
           <span class="text-secondary">Estimated GST / Taxes</span>
           <span class="text-muted">Included</span>
-        </div>
+        </div> -->
 
         <hr class="my-3" style="opacity: 0.1;">
 
@@ -574,9 +578,13 @@
             <span class="text-dark"><strong>100% Genuine SRL Pixel</strong> Products</span>
           </div>
           <div class="d-flex align-items-center gap-2 mb-2">
-            <i class="bi bi-truck text-danger fs-5" style="color: var(--srl-pink) !important;"></i>
-            <span class="text-dark"><strong>Express Dispatch</strong> in 24 Hours</span>
-          </div>
+    <i class="bi bi-truck text-danger fs-5" style="color: var(--srl-pink) !important;"></i>
+    <span class="text-dark"><strong>Dispatch within 24 hours</strong> - Pan India</span>
+</div>
+<div class="d-flex align-items-center gap-2 mb-2">
+    <i class="bi bi-globe text-info fs-5"></i>
+    <span class="text-dark"><strong>International shipping</strong> available</span>
+</div>
           <div class="d-flex align-items-center gap-2">
             <i class="bi bi-lock-fill text-primary fs-5"></i>
             <span class="text-dark"><strong>256-Bit SSL</strong> Encrypted Checkout</span>
