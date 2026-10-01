@@ -105,25 +105,16 @@ class Login extends CI_Controller {
 
         if ($this->input->server('REQUEST_METHOD') === 'POST') {
             $this->form_validation->set_rules('name', 'Full Name', 'trim|required|min_length[3]|max_length[150]');
-            $this->form_validation->set_rules('email', 'Email Address', 'trim|required|valid_email|max_length[150]');
             $this->form_validation->set_rules('phone', 'Mobile Number', 'trim|required|numeric|min_length[10]|max_length[15]');
 
             if ($this->form_validation->run() === TRUE) {
                 $name  = $this->input->post('name', TRUE);
-                $email = $this->input->post('email', TRUE);
                 $phone = $this->input->post('phone', TRUE);
 
                 $existing_phone = $this->General_model->getOne('user', ['phone' => $phone]);
-                $existing_email = $this->General_model->getOne('user', ['email' => $email]);
 
                 if ($existing_phone) {
                     $this->session->set_flashdata('error', 'This mobile number is already registered. Please sign in instead.');
-                    redirect('register');
-                    return;
-                }
-
-                if ($existing_email) {
-                    $this->session->set_flashdata('error', 'This email address is already registered. Please sign in instead.');
                     redirect('register');
                     return;
                 }
@@ -137,7 +128,6 @@ class Login extends CI_Controller {
                 $this->session->set_userdata('otp_session', [
                     'type'             => 'register',
                     'name'             => $name,
-                    'email'            => $email,
                     'phone'            => $phone,
                     'otp'              => $otp,
                     'otp_expiry'       => time() + 600,
@@ -239,7 +229,6 @@ if ($sms_result) {
                     // ===== REGISTER FLOW =====
                     $insert_data = [
                         'name'       => $otp_session['name'],
-                        'email'      => $otp_session['email'],
                         'phone'      => $otp_session['phone'],
                         'password'   => password_hash(bin2hex(random_bytes(8)), PASSWORD_BCRYPT), // placeholder, unused
                         'address'    => NULL,

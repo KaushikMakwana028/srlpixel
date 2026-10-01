@@ -103,8 +103,8 @@ defined('COMPANY_GSTIN')        OR define('COMPANY_GSTIN', "24AAACS7890F1Z5");
 | Replace these with your live / test Razorpay Dashboard API Keys
 |--------------------------------------------------------------------------
 */
-defined('RAZORPAY_KEY_ID')          OR define('RAZORPAY_KEY_ID', 'rzp_live_SbkQIMaWChyIJ5');
-defined('RAZORPAY_KEY_SECRET')      OR define('RAZORPAY_KEY_SECRET', '3x0mD480NiBVcoAf6uES5GUV');
+defined('RAZORPAY_KEY_ID')          OR define('RAZORPAY_KEY_ID', 'rzp_live_TiGJMyK9xvsX4u');
+defined('RAZORPAY_KEY_SECRET')      OR define('RAZORPAY_KEY_SECRET', 'J7K7mtywfGOwXOmw54Z0G9Fz');
 defined('RAZORPAY_CURRENCY')        OR define('RAZORPAY_CURRENCY', 'INR');
 defined('RAZORPAY_COMPANY_NAME')    OR define('RAZORPAY_COMPANY_NAME', 'VISION TECHNOLABS');
 defined('RAZORPAY_THEME_COLOR')     OR define('RAZORPAY_THEME_COLOR', '#2563eb');
